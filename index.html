@@ -683,6 +683,16 @@
                                 <label for="meetingTime">Meeting Time</label>
                                 <input type="time" id="meetingTime" placeholder="e.g., 09:00 AM">
                             </div>
+                            <div class="form-group">
+                                <label for="meetingDuration">Meeting Duration</label>
+                                <select id="meetingDuration">
+                                    <option value="60">60 minutes</option>
+                                    <option value="90" selected>90 minutes</option>
+                                    <option value="120">120 minutes</option>
+                                    <option value="150">150 minutes</option>
+                                    <option value="180">180 minutes</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="courseDescription">Description (Optional)</label>
@@ -864,6 +874,16 @@
                         <label for="editMeetingTime">Meeting Time</label>
                         <input type="time" id="editMeetingTime">
                     </div>
+                    <div class="form-group">
+                        <label for="editMeetingDuration">Meeting Duration</label>
+                        <select id="editMeetingDuration">
+                            <option value="60">60 minutes</option>
+                            <option value="90" selected>90 minutes</option>
+                            <option value="120">120 minutes</option>
+                            <option value="150">150 minutes</option>
+                            <option value="180">180 minutes</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="editCourseDescription">Description</label>
@@ -1019,6 +1039,7 @@
                 const description = sanitizeInput(document.getElementById('courseDescription').value.trim());
                 const meetingDays = Array.from(document.getElementById('meetingDays').selectedOptions).map(opt => opt.value);
                 const meetingTime = document.getElementById('meetingTime').value;
+                const meetingDuration = parseInt(document.getElementById('meetingDuration').value);
                 if (!name || !code) {
                     this.showNotification('Course name and code are required.', 'error');
                     return;
@@ -1033,6 +1054,7 @@
                     description,
                     meetingDays: meetingDays.length > 0 ? meetingDays : [],
                     meetingTime: meetingTime || null,
+                    meetingDuration: meetingDuration || 90, // Default to 90 minutes
                     createdAt: new Date()
                 };
                 this.courses.push(course);
@@ -1059,6 +1081,7 @@
                     option.selected = course.meetingDays.includes(option.value);
                 });
                 document.getElementById('editMeetingTime').value = course.meetingTime || '';
+                document.getElementById('editMeetingDuration').value = course.meetingDuration || 90;
                 this.updateQuarterDurationDisplay(course.semester, 'editQuarterDuration');
                 document.getElementById('courseModal').style.display = 'block';
             }
@@ -1073,6 +1096,7 @@
                 const code = sanitizeInput(document.getElementById('editCourseCode').value.trim());
                 const meetingDays = Array.from(document.getElementById('editMeetingDays').selectedOptions).map(opt => opt.value);
                 const meetingTime = document.getElementById('editMeetingTime').value;
+                const meetingDuration = parseInt(document.getElementById('editMeetingDuration').value);
                 if (!name || !code) {
                     this.showNotification('Course name and code are required.', 'error');
                     return;
@@ -1085,6 +1109,7 @@
                 course.description = sanitizeInput(document.getElementById('editCourseDescription').value.trim());
                 course.meetingDays = meetingDays.length > 0 ? meetingDays : [];
                 course.meetingTime = meetingTime || null;
+                course.meetingDuration = meetingDuration || 90;
                 this.saveCourses();
                 this.renderCourses();
                 this.updateCourseSelect();
@@ -1101,7 +1126,8 @@
                 const relatedTasks = this.tasks.filter(t => t.courseId === courseId).length;
                 let confirmMessage = `Are you sure you want to delete "${course.name}"?`;
                 if (relatedTasks > 0) {
-                    confirmMessage += `\n\nThis will also delete ${relatedTasks} related assignment(s).`;
+                    confirmMessage += `
+This will also delete ${relatedTasks} related assignment(s).`;
                 }
                 if (confirm(confirmMessage)) {
                     this.courses = this.courses.filter(c => c.id !== courseId);
@@ -1133,9 +1159,27 @@
                 const totalTasks = courseTasks.length;
                 const completedTasks = courseTasks.filter(t => t.completed).length;
                 const overdueTasks = courseTasks.filter(t => !t.completed && new Date(t.dueDate) < new Date()).length;
-                const meetingSchedule = course.meetingDays.length > 0 && course.meetingTime
-                    ? `${course.meetingDays.join(', ')} at ${course.meetingTime}`
-                    : 'No meeting schedule';
+                
+                // Format meeting schedule with duration
+                let meetingSchedule = 'No meeting schedule';
+                if (course.meetingDays.length > 0 && course.meetingTime) {
+                    const startTime = course.meetingTime;
+                    const duration = course.meetingDuration || 90;
+                    
+                    // Convert time string to Date object to calculate end time
+                    const [hours, minutes] = startTime.split(':');
+                    const startDate = new Date();
+                    startDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                    
+                    // Calculate end time
+                    const endDate = new Date(startDate.getTime() + duration * 60000);
+                    const endHours = endDate.getHours().toString().padStart(2, '0');
+                    const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
+                    const endTime = `${endHours}:${endMinutes}`;
+                    
+                    meetingSchedule = `${course.meetingDays.join(', ')} at ${startTime} - ${endTime} (${duration} min)`;
+                }
+                
                 return `
                     <div class="course-card">
                         <div class="course-header">
@@ -1361,10 +1405,14 @@
                     { name: 'Download .ics file', action: () => this.createICSFile(eventData) }
                 ];
                 const choice = prompt(
-                    'Choose calendar option:\n' +
-                    '1. Google Calendar\n' +
-                    '2. Outlook Calendar\n' +
-                    '3. Download .ics file\n\n' +
+                    'Choose calendar option:
+' +
+                    '1. Google Calendar
+' +
+                    '2. Outlook Calendar
+' +
+                    '3. Download .ics file
+' +
                     'Enter number (1-3):'
                 );
                 const selectedOption = parseInt(choice);
@@ -1413,6 +1461,7 @@
                 this.courses.forEach(course => {
                     if (course.meetingDays.length > 0 && course.meetingTime) {
                         const [hours, minutes] = course.meetingTime.split(':');
+                        const duration = course.meetingDuration || 90; // Use course duration or default to 90 minutes
                         course.meetingDays.forEach(day => {
                             // Map day names to JavaScript day numbers (0=Sunday, 1=Monday, ..., 5=Friday)
                             const dayMap = {
@@ -1431,7 +1480,7 @@
                             // Generate events for each week until semester end
                             while (currentDate <= semesterEnd) {
                                 const startDate = new Date(currentDate);
-                                const endDate = new Date(startDate.getTime() + 90 * 60 * 1000); // 90-minute duration
+                                const endDate = new Date(startDate.getTime() + duration * 60 * 1000); // Use course duration
                                 events.push({
                                     title: `${course.name} - ${course.code} Class`,
                                     start: this.formatDateForCalendar(startDate),
@@ -1528,21 +1577,36 @@
                 this.showNotification(`Downloaded ${events.length} events as .ics file.`, 'success');
             }
             generateICSContent(events) {
-                let icsContent = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TaskSchedulerPro//EN\r\n';
+                let icsContent = 'BEGIN:VCALENDAR\r
+VERSION:2.0\r
+PRODID:-//TaskSchedulerPro//EN\r
+';
                 events.forEach(event => {
                     // Escape special characters for ICS compatibility
-                    const escapeICS = str => (str || '').replace(/([\\,;])/g, '\\$1').replace(/\n/g, '\\n');
-                    icsContent += 'BEGIN:VEVENT\r\n';
-                    icsContent += `UID:${Date.now()}-${Math.random()}@taskschedulerpro.com\r\n`;
-                    icsContent += `DTSTART:${event.start}\r\n`;
-                    icsContent += `DTEND:${event.end}\r\n`;
-                    icsContent += `SUMMARY:${escapeICS(event.title)}\r\n`;
-                    icsContent += `DESCRIPTION:${escapeICS(event.description)}\r\n`;
-                    icsContent += `LOCATION:${escapeICS(event.location)}\r\n`;
-                    icsContent += `DTSTAMP:${this.formatDateForCalendar(new Date())}\r\n`;
-                    icsContent += 'END:VEVENT\r\n';
+                    const escapeICS = str => (str || '').replace(/([\\,;])/g, '\\$1').replace(/
+/g, '\
+');
+                    icsContent += 'BEGIN:VEVENT\r
+';
+                    icsContent += `UID:${Date.now()}-${Math.random()}@taskschedulerpro.com\r
+`;
+                    icsContent += `DTSTART:${event.start}\r
+`;
+                    icsContent += `DTEND:${event.end}\r
+`;
+                    icsContent += `SUMMARY:${escapeICS(event.title)}\r
+`;
+                    icsContent += `DESCRIPTION:${escapeICS(event.description)}\r
+`;
+                    icsContent += `LOCATION:${escapeICS(event.location)}\r
+`;
+                    icsContent += `DTSTAMP:${this.formatDateForCalendar(new Date())}\r
+`;
+                    icsContent += 'END:VEVENT\r
+';
                 });
-                icsContent += 'END:VCALENDAR\r\n';
+                icsContent += 'END:VCALENDAR\r
+';
                 return icsContent;
             }
             formatDateForCalendar(date) {
@@ -1749,6 +1813,7 @@
                         createdAt: new Date(course.createdAt),
                         meetingDays: course.meetingDays || [],
                         meetingTime: course.meetingTime || null,
+                        meetingDuration: course.meetingDuration || 90, // Default to 90 minutes
                         quarterDuration: course.quarterDuration || this.getQuarterDuration(course.semester)
                     }));
                 } catch (error) {
