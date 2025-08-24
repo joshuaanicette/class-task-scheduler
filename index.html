@@ -665,6 +665,7 @@
                                     <option value="Spring 2025">Spring 2025</option>
                                     <option value="Summer 2025">Summer 2025</option>
                                 </select>
+                                <span id="quarterDuration" style="color: #666; font-size: 0.9em; margin-top: 8px; display: block;"></span>
                             </div>
                         </div>
                         <div class="form-row">
@@ -846,6 +847,7 @@
                         <option value="Spring 2025">Spring 2025</option>
                         <option value="Summer 2025">Summer 2025</option>
                     </select>
+                    <span id="editQuarterDuration" style="color: #666; font-size: 0.9em; margin-top: 8px; display: block;"></span>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -919,7 +921,6 @@
             div.textContent = input;
             return div.innerHTML;
         }
-
         class TaskSchedulerPro {
             constructor() {
                 // Initialize data from localStorage
@@ -927,9 +928,15 @@
                 this.tasks = this.loadTasks();
                 this.currentFilter = 'all';
                 this.notificationPermission = false;
+                // Define quarter date ranges
+                this.quarterDates = {
+                    'Fall 2024': { start: new Date('2024-09-22'), end: new Date('2024-12-12') },
+                    'Winter 2025': { start: new Date('2025-01-06'), end: new Date('2025-03-20') },
+                    'Spring 2025': { start: new Date('2025-03-31'), end: new Date('2025-06-12') },
+                    'Summer 2025': { start: new Date('2025-06-23'), end: new Date('2025-08-28') }
+                };
                 this.init();
             }
-
             // Initialize the application
             init() {
                 this.setupEventListeners();
@@ -940,8 +947,9 @@
                 this.setMinDateTime();
                 this.checkNotificationPermission();
                 this.startAlertSystem();
+                // Initialize quarter duration display
+                this.updateQuarterDurationDisplay(document.getElementById('semester').value);
             }
-
             // Set up event listeners for forms, buttons, and modals
             setupEventListeners() {
                 // Course form submission
@@ -963,6 +971,13 @@
                 document.getElementById('editTaskForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.updateTask();
+                });
+                // Quarter selection change
+                document.getElementById('semester').addEventListener('change', (e) => {
+                    this.updateQuarterDurationDisplay(e.target.value);
+                });
+                document.getElementById('editSemester').addEventListener('change', (e) => {
+                    this.updateQuarterDurationDisplay(e.target.value, 'editQuarterDuration');
                 });
                 // Filter buttons
                 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -995,7 +1010,6 @@
                     this.updateStats();
                 }, 60000);
             }
-
             // Course Management
             addCourse() {
                 const name = sanitizeInput(document.getElementById('courseName').value.trim());
@@ -1015,6 +1029,7 @@
                     code,
                     instructor,
                     semester,
+                    quarterDuration: this.getQuarterDuration(semester),
                     description,
                     meetingDays: meetingDays.length > 0 ? meetingDays : [],
                     meetingTime: meetingTime || null,
@@ -1027,7 +1042,6 @@
                 this.clearCourseForm();
                 this.showNotification('Course added successfully!', 'success');
             }
-
             editCourse(courseId) {
                 const course = this.courses.find(c => c.id === courseId);
                 if (!course) {
@@ -1045,9 +1059,9 @@
                     option.selected = course.meetingDays.includes(option.value);
                 });
                 document.getElementById('editMeetingTime').value = course.meetingTime || '';
+                this.updateQuarterDurationDisplay(course.semester, 'editQuarterDuration');
                 document.getElementById('courseModal').style.display = 'block';
             }
-
             updateCourse() {
                 const courseId = parseInt(document.getElementById('editCourseId').value);
                 const course = this.courses.find(c => c.id === courseId);
@@ -1067,17 +1081,17 @@
                 course.code = code;
                 course.instructor = sanitizeInput(document.getElementById('editInstructor').value.trim());
                 course.semester = document.getElementById('editSemester').value;
+                course.quarterDuration = this.getQuarterDuration(course.semester);
                 course.description = sanitizeInput(document.getElementById('editCourseDescription').value.trim());
                 course.meetingDays = meetingDays.length > 0 ? meetingDays : [];
                 course.meetingTime = meetingTime || null;
                 this.saveCourses();
                 this.renderCourses();
                 this.updateCourseSelect();
-                this.renderTasks(); // Update tasks to reflect course name changes
+                this.renderTasks();
                 document.getElementById('courseModal').style.display = 'none';
                 this.showNotification('Course updated successfully!', 'success');
             }
-
             deleteCourse(courseId) {
                 const course = this.courses.find(c => c.id === courseId);
                 if (!course) {
@@ -1101,7 +1115,6 @@
                     this.showNotification('Course and related assignments deleted.', 'success');
                 }
             }
-
             renderCourses() {
                 const coursesGrid = document.getElementById('coursesGrid');
                 if (this.courses.length === 0) {
@@ -1115,7 +1128,6 @@
                 }
                 coursesGrid.innerHTML = this.courses.map(course => this.createCourseHTML(course)).join('');
             }
-
             createCourseHTML(course) {
                 const courseTasks = this.tasks.filter(t => t.courseId === course.id);
                 const totalTasks = courseTasks.length;
@@ -1139,6 +1151,7 @@
                         </div>
                         ${course.description ? `<p style="color: #666; margin-bottom: 15px;">${course.description}</p>` : ''}
                         <p style="color: #666; margin-bottom: 15px;">📅 ${meetingSchedule}</p>
+                        <p style="color: #666; margin-bottom: 15px;">🗓 Quarter: ${course.semester} (${course.quarterDuration})</p>
                         <div class="course-stats">
                             <div class="course-stat">
                                 <div class="course-stat-number">${totalTasks}</div>
@@ -1156,7 +1169,6 @@
                     </div>
                 `;
             }
-
             // Task Management
             addTask() {
                 const title = sanitizeInput(document.getElementById('taskTitle').value.trim());
@@ -1192,7 +1204,6 @@
                 this.clearTaskForm();
                 this.showNotification('Assignment added successfully!', 'success');
             }
-
             editTask(taskId) {
                 const task = this.tasks.find(t => t.id === taskId);
                 if (!task) {
@@ -1208,7 +1219,6 @@
                 this.updateCourseSelectForEdit();
                 document.getElementById('taskModal').style.display = 'block';
             }
-
             updateTask() {
                 const taskId = parseInt(document.getElementById('editTaskId').value);
                 const task = this.tasks.find(t => t.id === taskId);
@@ -1243,7 +1253,6 @@
                 document.getElementById('taskModal').style.display = 'none';
                 this.showNotification('Assignment updated successfully!', 'success');
             }
-
             completeTask(id) {
                 const task = this.tasks.find(t => t.id === id);
                 if (!task) {
@@ -1257,7 +1266,6 @@
                 this.updateStats();
                 this.showNotification(task.completed ? 'Assignment completed!' : 'Assignment marked as pending.', 'success');
             }
-
             deleteTask(id) {
                 if (!confirm('Are you sure you want to delete this assignment?')) return;
                 const task = this.tasks.find(t => t.id === id);
@@ -1272,7 +1280,6 @@
                 this.updateStats();
                 this.showNotification('Assignment deleted successfully!', 'success');
             }
-
             renderTasks() {
                 const taskList = document.getElementById('taskList');
                 const filteredTasks = this.getFilteredTasks();
@@ -1295,7 +1302,6 @@
                 });
                 taskList.innerHTML = filteredTasks.map(task => this.createTaskHTML(task)).join('');
             }
-
             createTaskHTML(task) {
                 const dueDate = new Date(task.dueDate);
                 const now = new Date();
@@ -1330,7 +1336,6 @@
                     </div>
                 `;
             }
-
             // Calendar Integration
             addToCalendar(taskId) {
                 const task = this.tasks.find(t => t.id === taskId);
@@ -1349,7 +1354,6 @@
                 };
                 this.openCalendarOptions(eventData);
             }
-
             openCalendarOptions(eventData) {
                 const options = [
                     { name: 'Google Calendar', action: () => this.createGoogleCalendarEvent(eventData) },
@@ -1370,7 +1374,6 @@
                     this.showNotification('Invalid calendar option selected.', 'error');
                 }
             }
-
             createGoogleCalendarEvent(eventData) {
                 const baseUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
                 const params = new URLSearchParams({
@@ -1382,7 +1385,6 @@
                 window.open(`${baseUrl}&${params.toString()}`, '_blank');
                 this.showNotification('Opening Google Calendar event...', 'success');
             }
-
             createOutlookEvent(eventData) {
                 const baseUrl = 'https://outlook.live.com/calendar/0/deeplink/compose';
                 const params = new URLSearchParams({
@@ -1395,7 +1397,6 @@
                 window.open(`${baseUrl}?${params.toString()}`, '_blank');
                 this.showNotification('Opening Outlook Calendar event...', 'success');
             }
-
             createICSFile(eventData) {
                 const icsContent = this.generateICSContent([eventData]);
                 const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
@@ -1405,7 +1406,6 @@
                 link.click();
                 this.showNotification('Downloaded .ics file.', 'success');
             }
-
             getCourseMeetingEvents() {
                 const events = [];
                 const now = new Date();
@@ -1446,7 +1446,6 @@
                 });
                 return events;
             }
-
             exportToGoogleCalendar() {
                 const pendingTasks = this.tasks.filter(t => !t.completed);
                 const courseEvents = this.getCourseMeetingEvents();
@@ -1473,7 +1472,6 @@
                 });
                 this.showNotification(`Opening ${pendingTasks.length + courseEvents.length} Google Calendar events...`, 'success');
             }
-
             exportToOutlook() {
                 const pendingTasks = this.tasks.filter(t => !t.completed);
                 const courseEvents = this.getCourseMeetingEvents();
@@ -1500,11 +1498,9 @@
                 });
                 this.showNotification(`Opening ${pendingTasks.length + courseEvents.length} Outlook Calendar events...`, 'success');
             }
-
             exportToAppleCalendar() {
                 this.exportToICS();
             }
-
             exportToICS() {
                 const pendingTasks = this.tasks.filter(t => !t.completed);
                 const courseEvents = this.getCourseMeetingEvents();
@@ -1531,7 +1527,6 @@
                 link.click();
                 this.showNotification(`Downloaded ${events.length} events as .ics file.`, 'success');
             }
-
             generateICSContent(events) {
                 let icsContent = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TaskSchedulerPro//EN\r\n';
                 events.forEach(event => {
@@ -1550,17 +1545,14 @@
                 icsContent += 'END:VCALENDAR\r\n';
                 return icsContent;
             }
-
             formatDateForCalendar(date) {
                 return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
             }
-
             // Alert System
             startAlertSystem() {
                 // Initial alert check after 2 seconds
                 setTimeout(() => this.checkAlerts(), 2000);
             }
-
             checkAlerts() {
                 if (!this.notificationPermission) return;
                 const now = new Date();
@@ -1593,7 +1585,6 @@
                     }
                 });
             }
-
             sendNotification(message, task) {
                 if (this.notificationPermission && 'Notification' in window) {
                     new Notification('📚 Task Reminder', {
@@ -1604,7 +1595,6 @@
                 }
                 this.showNotification(message, 'info');
             }
-
             // Notification Permission
             async requestNotificationPermission() {
                 if ('Notification' in window) {
@@ -1625,14 +1615,12 @@
                     this.showNotification('Notifications not supported in this browser.', 'error');
                 }
             }
-
             checkNotificationPermission() {
                 if ('Notification' in window) {
                     this.notificationPermission = Notification.permission === 'granted';
                     this.updateNotificationButton();
                 }
             }
-
             updateNotificationButton() {
                 const btn = document.querySelector('.notification-permission');
                 if (this.notificationPermission) {
@@ -1643,7 +1631,27 @@
                     btn.classList.remove('enabled');
                 }
             }
-
+            // Quarter Duration Calculations
+            calculateDaysDuration(startDate, endDate) {
+                const diffTime = Math.abs(endDate - startDate);
+                return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            }
+            calculateWeeksDuration(startDate, endDate) {
+                return Math.ceil(this.calculateDaysDuration(startDate, endDate) / 7);
+            }
+            getQuarterDuration(semester) {
+                const quarter = this.quarterDates[semester];
+                if (!quarter) return 'Unknown duration';
+                const days = this.calculateDaysDuration(quarter.start, quarter.end);
+                const weeks = this.calculateWeeksDuration(quarter.start, quarter.end);
+                return `${days} days (${weeks} weeks)`;
+            }
+            updateQuarterDurationDisplay(semester, elementId = 'quarterDuration') {
+                const durationDisplay = document.getElementById(elementId);
+                if (durationDisplay) {
+                    durationDisplay.textContent = `Duration: ${this.getQuarterDuration(semester)}`;
+                }
+            }
             // Utility Functions
             getFilteredTasks() {
                 const now = new Date();
@@ -1662,7 +1670,6 @@
                     }
                 });
             }
-
             updateStats() {
                 const now = new Date();
                 const total = this.tasks.length;
@@ -1674,7 +1681,6 @@
                 document.getElementById('completedTasks').textContent = completed;
                 document.getElementById('overdueTasks').textContent = overdue;
             }
-
             updateCourseSelect() {
                 const courseSelect = document.getElementById('courseSelect');
                 courseSelect.innerHTML = '<option value="">Select a course...</option>';
@@ -1685,7 +1691,6 @@
                     courseSelect.appendChild(option);
                 });
             }
-
             updateCourseSelectForEdit() {
                 const courseSelect = document.getElementById('editCourseSelect');
                 courseSelect.innerHTML = '<option value="">Select a course...</option>';
@@ -1696,12 +1701,10 @@
                     courseSelect.appendChild(option);
                 });
             }
-
             setActiveFilter(activeBtn) {
                 document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
                 activeBtn.classList.add('active');
             }
-
             setMinDateTime() {
                 const now = new Date();
                 const offset = now.getTimezoneOffset() * 60000;
@@ -1709,7 +1712,6 @@
                 document.getElementById('dueDate').min = localISOTime;
                 document.getElementById('editDueDate').min = localISOTime;
             }
-
             formatDateTime(date) {
                 const options = {
                     month: 'short',
@@ -1720,16 +1722,14 @@
                 };
                 return date.toLocaleDateString('en-US', options);
             }
-
             clearCourseForm() {
                 document.getElementById('courseForm').reset();
+                this.updateQuarterDurationDisplay(document.getElementById('semester').value);
             }
-
             clearTaskForm() {
                 document.getElementById('taskForm').reset();
                 this.setMinDateTime();
             }
-
             showNotification(message, type = 'info') {
                 const notification = document.createElement('div');
                 notification.className = 'notification-popup';
@@ -1740,7 +1740,6 @@
                     notification.remove();
                 }, 4000);
             }
-
             // Data Management
             loadCourses() {
                 try {
@@ -1749,7 +1748,8 @@
                         ...course,
                         createdAt: new Date(course.createdAt),
                         meetingDays: course.meetingDays || [],
-                        meetingTime: course.meetingTime || null
+                        meetingTime: course.meetingTime || null,
+                        quarterDuration: course.quarterDuration || this.getQuarterDuration(course.semester)
                     }));
                 } catch (error) {
                     console.error('Error loading courses:', error);
@@ -1757,7 +1757,6 @@
                     return [];
                 }
             }
-
             saveCourses() {
                 try {
                     localStorage.setItem('taskSchedulerCourses', JSON.stringify(this.courses));
@@ -1766,7 +1765,6 @@
                     this.showNotification('Failed to save courses.', 'error');
                 }
             }
-
             loadTasks() {
                 try {
                     const tasks = JSON.parse(localStorage.getItem('taskSchedulerTasks') || '[]');
@@ -1781,7 +1779,6 @@
                     return [];
                 }
             }
-
             saveTasks() {
                 try {
                     localStorage.setItem('taskSchedulerTasks', JSON.stringify(this.tasks));
@@ -1791,7 +1788,6 @@
                 }
             }
         }
-
         // Tab Management
         function openTab(evt, tabName) {
             const tabcontent = document.getElementsByClassName('tab-content');
@@ -1805,28 +1801,22 @@
             document.getElementById(tabName).classList.add('active');
             evt.currentTarget.classList.add('active');
         }
-
         // Global Functions
         function requestNotificationPermission() {
             taskScheduler.requestNotificationPermission();
         }
-
         function exportToGoogleCalendar() {
             taskScheduler.exportToGoogleCalendar();
         }
-
         function exportToOutlook() {
             taskScheduler.exportToOutlook();
         }
-
         function exportToAppleCalendar() {
             taskScheduler.exportToAppleCalendar();
         }
-
         function exportToICS() {
             taskScheduler.exportToICS();
         }
-
         // Initialize the task scheduler
         const taskScheduler = new TaskSchedulerPro();
     </script>
