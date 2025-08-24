@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "class-task-scheduler",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
