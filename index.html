@@ -220,7 +220,27 @@
             min-height: 80px;
         }
         .form-group select[multiple] {
-            height: 100px;
+            height: 120px;
+            background-color: #f8f9fa;
+            border-color: #b8c3cc;
+        }
+        .form-group select[multiple] option {
+            padding: 8px 12px;
+            margin: 2px 0;
+            border-radius: 6px;
+        }
+        .form-group select[multiple] option:hover {
+            background-color: #e9ecef;
+        }
+        .form-group select[multiple] option:checked {
+            background-color: #4facfe;
+            color: white;
+        }
+        .form-group .select-instructions {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
         }
         .add-btn {
             width: 100%;
@@ -678,20 +698,13 @@
                                     <option value="Thursday">Thursday</option>
                                     <option value="Friday">Friday</option>
                                 </select>
+                                <div class="select-instructions">
+                                    Hold Ctrl (or Cmd on Mac) to select multiple days
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="meetingTime">Meeting Time</label>
                                 <input type="time" id="meetingTime" placeholder="e.g., 09:00 AM">
-                            </div>
-                            <div class="form-group">
-                                <label for="meetingDuration">Meeting Duration</label>
-                                <select id="meetingDuration">
-                                    <option value="60">60 minutes</option>
-                                    <option value="90" selected>90 minutes</option>
-                                    <option value="120">120 minutes</option>
-                                    <option value="150">150 minutes</option>
-                                    <option value="180">180 minutes</option>
-                                </select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -869,20 +882,13 @@
                             <option value="Thursday">Thursday</option>
                             <option value="Friday">Friday</option>
                         </select>
+                        <div class="select-instructions">
+                            Hold Ctrl (or Cmd on Mac) to select multiple days
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="editMeetingTime">Meeting Time</label>
                         <input type="time" id="editMeetingTime">
-                    </div>
-                    <div class="form-group">
-                        <label for="editMeetingDuration">Meeting Duration</label>
-                        <select id="editMeetingDuration">
-                            <option value="60">60 minutes</option>
-                            <option value="90" selected>90 minutes</option>
-                            <option value="120">120 minutes</option>
-                            <option value="150">150 minutes</option>
-                            <option value="180">180 minutes</option>
-                        </select>
                     </div>
                 </div>
                 <div class="form-group">
@@ -1039,7 +1045,6 @@
                 const description = sanitizeInput(document.getElementById('courseDescription').value.trim());
                 const meetingDays = Array.from(document.getElementById('meetingDays').selectedOptions).map(opt => opt.value);
                 const meetingTime = document.getElementById('meetingTime').value;
-                const meetingDuration = parseInt(document.getElementById('meetingDuration').value);
                 if (!name || !code) {
                     this.showNotification('Course name and code are required.', 'error');
                     return;
@@ -1054,7 +1059,6 @@
                     description,
                     meetingDays: meetingDays.length > 0 ? meetingDays : [],
                     meetingTime: meetingTime || null,
-                    meetingDuration: meetingDuration || 90, // Default to 90 minutes
                     createdAt: new Date()
                 };
                 this.courses.push(course);
@@ -1081,7 +1085,6 @@
                     option.selected = course.meetingDays.includes(option.value);
                 });
                 document.getElementById('editMeetingTime').value = course.meetingTime || '';
-                document.getElementById('editMeetingDuration').value = course.meetingDuration || 90;
                 this.updateQuarterDurationDisplay(course.semester, 'editQuarterDuration');
                 document.getElementById('courseModal').style.display = 'block';
             }
@@ -1096,7 +1099,6 @@
                 const code = sanitizeInput(document.getElementById('editCourseCode').value.trim());
                 const meetingDays = Array.from(document.getElementById('editMeetingDays').selectedOptions).map(opt => opt.value);
                 const meetingTime = document.getElementById('editMeetingTime').value;
-                const meetingDuration = parseInt(document.getElementById('editMeetingDuration').value);
                 if (!name || !code) {
                     this.showNotification('Course name and code are required.', 'error');
                     return;
@@ -1109,7 +1111,6 @@
                 course.description = sanitizeInput(document.getElementById('editCourseDescription').value.trim());
                 course.meetingDays = meetingDays.length > 0 ? meetingDays : [];
                 course.meetingTime = meetingTime || null;
-                course.meetingDuration = meetingDuration || 90;
                 this.saveCourses();
                 this.renderCourses();
                 this.updateCourseSelect();
@@ -1159,27 +1160,9 @@ This will also delete ${relatedTasks} related assignment(s).`;
                 const totalTasks = courseTasks.length;
                 const completedTasks = courseTasks.filter(t => t.completed).length;
                 const overdueTasks = courseTasks.filter(t => !t.completed && new Date(t.dueDate) < new Date()).length;
-                
-                // Format meeting schedule with duration
-                let meetingSchedule = 'No meeting schedule';
-                if (course.meetingDays.length > 0 && course.meetingTime) {
-                    const startTime = course.meetingTime;
-                    const duration = course.meetingDuration || 90;
-                    
-                    // Convert time string to Date object to calculate end time
-                    const [hours, minutes] = startTime.split(':');
-                    const startDate = new Date();
-                    startDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-                    
-                    // Calculate end time
-                    const endDate = new Date(startDate.getTime() + duration * 60000);
-                    const endHours = endDate.getHours().toString().padStart(2, '0');
-                    const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
-                    const endTime = `${endHours}:${endMinutes}`;
-                    
-                    meetingSchedule = `${course.meetingDays.join(', ')} at ${startTime} - ${endTime} (${duration} min)`;
-                }
-                
+                const meetingSchedule = course.meetingDays.length > 0 && course.meetingTime
+                    ? `${course.meetingDays.join(', ')} at ${course.meetingTime}`
+                    : 'No meeting schedule';
                 return `
                     <div class="course-card">
                         <div class="course-header">
@@ -1461,7 +1444,6 @@ This will also delete ${relatedTasks} related assignment(s).`;
                 this.courses.forEach(course => {
                     if (course.meetingDays.length > 0 && course.meetingTime) {
                         const [hours, minutes] = course.meetingTime.split(':');
-                        const duration = course.meetingDuration || 90; // Use course duration or default to 90 minutes
                         course.meetingDays.forEach(day => {
                             // Map day names to JavaScript day numbers (0=Sunday, 1=Monday, ..., 5=Friday)
                             const dayMap = {
@@ -1480,7 +1462,7 @@ This will also delete ${relatedTasks} related assignment(s).`;
                             // Generate events for each week until semester end
                             while (currentDate <= semesterEnd) {
                                 const startDate = new Date(currentDate);
-                                const endDate = new Date(startDate.getTime() + duration * 60 * 1000); // Use course duration
+                                const endDate = new Date(startDate.getTime() + 90 * 60 * 1000); // 90-minute duration
                                 events.push({
                                     title: `${course.name} - ${course.code} Class`,
                                     start: this.formatDateForCalendar(startDate),
@@ -1813,7 +1795,6 @@ PRODID:-//TaskSchedulerPro//EN\r
                         createdAt: new Date(course.createdAt),
                         meetingDays: course.meetingDays || [],
                         meetingTime: course.meetingTime || null,
-                        meetingDuration: course.meetingDuration || 90, // Default to 90 minutes
                         quarterDuration: course.quarterDuration || this.getQuarterDuration(course.semester)
                     }));
                 } catch (error) {
