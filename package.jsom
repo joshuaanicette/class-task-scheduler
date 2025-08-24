@@ -1,0 +1,14 @@
+{
+  "name": "class-task-scheduler",
+  "version": "1.0.0",
+  "description": "A responsive class task scheduler with due dates and priorities",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site - no build needed'",
+    "start": "vercel dev"
+  },
+  "keywords": ["task", "scheduler", "class", "student", "productivity"],
+  "author": "Your Name",
+  "license": "MIT"
+}
