@@ -1439,38 +1439,54 @@ This will also delete ${relatedTasks} related assignment(s).`;
             }
             getCourseMeetingEvents() {
                 const events = [];
-                const now = new Date();
-                const semesterEnd = new Date('2025-12-31'); // Assuming semester ends by year-end; adjust as needed
                 this.courses.forEach(course => {
                     if (course.meetingDays.length > 0 && course.meetingTime) {
+                        // Get the quarter start and end dates
+                        const quarter = this.quarterDates[course.semester];
+                        if (!quarter) return;
+                        
+                        const startDate = new Date(quarter.start);
+                        const endDate = new Date(quarter.end);
                         const [hours, minutes] = course.meetingTime.split(':');
+                        
+                        // Set the time for the meeting
+                        startDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                        
+                        // Map day names to JavaScript day numbers (0=Sunday, 1=Monday, ..., 6=Saturday)
+                        const dayMap = {
+                            'Sunday': 0,
+                            'Monday': 1,
+                            'Tuesday': 2,
+                            'Wednesday': 3,
+                            'Thursday': 4,
+                            'Friday': 5,
+                            'Saturday': 6
+                        };
+                        
+                        // For each meeting day
                         course.meetingDays.forEach(day => {
-                            // Map day names to JavaScript day numbers (0=Sunday, 1=Monday, ..., 5=Friday)
-                            const dayMap = {
-                                'Monday': 1,
-                                'Tuesday': 2,
-                                'Wednesday': 3,
-                                'Thursday': 4,
-                                'Friday': 5
-                            };
-                            let currentDate = new Date(now);
-                            currentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-                            // Find the next occurrence of the specified day
+                            let currentDate = new Date(startDate);
+                            
+                            // Find the first occurrence of this day in the quarter
                             while (currentDate.getDay() !== dayMap[day]) {
                                 currentDate.setDate(currentDate.getDate() + 1);
                             }
-                            // Generate events for each week until semester end
-                            while (currentDate <= semesterEnd) {
-                                const startDate = new Date(currentDate);
-                                const endDate = new Date(startDate.getTime() + 90 * 60 * 1000); // 90-minute duration
+                            
+                            // Generate weekly events until the end of the quarter
+                            while (currentDate <= endDate) {
+                                const eventStartDate = new Date(currentDate);
+                                const eventEndDate = new Date(eventStartDate.getTime() + 90 * 60 * 1000); // 90-minute duration
+                                
                                 events.push({
                                     title: `${course.name} - ${course.code} Class`,
-                                    start: this.formatDateForCalendar(startDate),
-                                    end: this.formatDateForCalendar(endDate),
+                                    start: this.formatDateForCalendar(eventStartDate),
+                                    end: this.formatDateForCalendar(eventEndDate),
                                     description: `Class meeting for ${course.name} (${course.code})${course.instructor ? ` with ${course.instructor}` : ''}`,
                                     location: course.name
                                 });
-                                currentDate.setDate(currentDate.getDate() + 7); // Next week
+                                
+                                // Move to the same day next week
+                                currentDate.setDate(currentDate.getDate() + 7);
                             }
                         });
                     }
@@ -1484,6 +1500,7 @@ This will also delete ${relatedTasks} related assignment(s).`;
                     this.showNotification('No pending assignments or course meetings to export.', 'info');
                     return;
                 }
+                
                 // Export assignments
                 pendingTasks.forEach(task => {
                     const startDate = new Date(task.dueDate);
@@ -1497,10 +1514,12 @@ This will also delete ${relatedTasks} related assignment(s).`;
                     };
                     setTimeout(() => this.createGoogleCalendarEvent(eventData), 500);
                 });
+                
                 // Export course meetings
                 courseEvents.forEach((event, index) => {
                     setTimeout(() => this.createGoogleCalendarEvent(event), (pendingTasks.length + index) * 500);
                 });
+                
                 this.showNotification(`Opening ${pendingTasks.length + courseEvents.length} Google Calendar events...`, 'success');
             }
             exportToOutlook() {
@@ -1510,6 +1529,7 @@ This will also delete ${relatedTasks} related assignment(s).`;
                     this.showNotification('No pending assignments or course meetings to export.', 'info');
                     return;
                 }
+                
                 // Export assignments
                 pendingTasks.forEach((task, index) => {
                     const startDate = new Date(task.dueDate);
@@ -1523,10 +1543,12 @@ This will also delete ${relatedTasks} related assignment(s).`;
                     };
                     setTimeout(() => this.createOutlookEvent(eventData), index * 1000);
                 });
+                
                 // Export course meetings
                 courseEvents.forEach((event, index) => {
                     setTimeout(() => this.createOutlookEvent(event), (pendingTasks.length + index) * 1000);
                 });
+                
                 this.showNotification(`Opening ${pendingTasks.length + courseEvents.length} Outlook Calendar events...`, 'success');
             }
             exportToAppleCalendar() {
@@ -1539,6 +1561,7 @@ This will also delete ${relatedTasks} related assignment(s).`;
                     this.showNotification('No pending assignments or course meetings to export.', 'info');
                     return;
                 }
+                
                 const events = pendingTasks.map(task => {
                     const startDate = new Date(task.dueDate);
                     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
@@ -1550,6 +1573,7 @@ This will also delete ${relatedTasks} related assignment(s).`;
                         location: task.courseName
                     };
                 }).concat(courseEvents);
+                
                 const icsContent = this.generateICSContent(events);
                 const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
                 const link = document.createElement('a');
