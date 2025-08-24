@@ -655,9 +655,10 @@
                                 <input type="text" id="instructor" placeholder="Dr. Smith">
                             </div>
                             <div class="form-group">
-                                <label for="semester">Semester</label>
+                                <label for="quarter">Quarter</label>
                                 <select id="semester">
                                     <option value="Fall 2024">Fall 2024</option>
+                                    <option value="Winter 2025">Winter 2025</option>
                                     <option value="Spring 2025">Spring 2025</option>
                                     <option value="Summer 2025">Summer 2025</option>
                                 </select>
@@ -819,9 +820,10 @@
                     <input type="text" id="editInstructor">
                 </div>
                 <div class="form-group">
-                    <label for="editSemester">Semester</label>
+                    <label for="editQuarter">Quarter</label>
                     <select id="editSemester">
                         <option value="Fall 2024">Fall 2024</option>
+                        <option value="Winter 2025">Winter 2025</option>
                         <option value="Spring 2025">Spring 2025</option>
                         <option value="Summer 2025">Summer 2025</option>
                     </select>
@@ -882,7 +884,6 @@
             div.textContent = input;
             return div.innerHTML;
         }
-
         class TaskSchedulerPro {
             constructor() {
                 // Initialize data from localStorage
@@ -892,7 +893,6 @@
                 this.notificationPermission = false;
                 this.init();
             }
-
             // Initialize the application
             init() {
                 this.setupEventListeners();
@@ -904,7 +904,6 @@
                 this.checkNotificationPermission();
                 this.startAlertSystem();
             }
-
             // Set up event listeners for forms, buttons, and modals
             setupEventListeners() {
                 // Course form submission
@@ -912,25 +911,21 @@
                     e.preventDefault();
                     this.addCourse();
                 });
-
                 // Task form submission
                 document.getElementById('taskForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.addTask();
                 });
-
                 // Edit course form submission
                 document.getElementById('editCourseForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.updateCourse();
                 });
-
                 // Edit task form submission
                 document.getElementById('editTaskForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.updateTask();
                 });
-
                 // Filter buttons
                 document.querySelectorAll('.filter-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
@@ -939,7 +934,6 @@
                         this.renderTasks();
                     });
                 });
-
                 // Modal close buttons
                 document.querySelectorAll('.close').forEach(closeBtn => {
                     closeBtn.addEventListener('click', () => {
@@ -947,7 +941,6 @@
                         document.getElementById('taskModal').style.display = 'none';
                     });
                 });
-
                 // Close modals when clicking outside
                 window.addEventListener('click', (e) => {
                     if (e.target === document.getElementById('courseModal')) {
@@ -957,7 +950,6 @@
                         document.getElementById('taskModal').style.display = 'none';
                     }
                 });
-
                 // Check for alerts every minute
                 setInterval(() => {
                     this.checkAlerts();
@@ -965,7 +957,6 @@
                     this.updateStats();
                 }, 60000);
             }
-
             // Course Management
             addCourse() {
                 const name = sanitizeInput(document.getElementById('courseName').value.trim());
@@ -973,12 +964,10 @@
                 const instructor = sanitizeInput(document.getElementById('instructor').value.trim());
                 const semester = document.getElementById('semester').value;
                 const description = sanitizeInput(document.getElementById('courseDescription').value.trim());
-
                 if (!name || !code) {
                     this.showNotification('Course name and code are required.', 'error');
                     return;
                 }
-
                 const course = {
                     id: Date.now(),
                     name,
@@ -988,7 +977,6 @@
                     description,
                     createdAt: new Date()
                 };
-
                 this.courses.push(course);
                 this.saveCourses();
                 this.renderCourses();
@@ -996,14 +984,12 @@
                 this.clearCourseForm();
                 this.showNotification('Course added successfully!', 'success');
             }
-
             editCourse(courseId) {
                 const course = this.courses.find(c => c.id === courseId);
                 if (!course) {
                     this.showNotification('Course not found.', 'error');
                     return;
                 }
-
                 document.getElementById('editCourseId').value = course.id;
                 document.getElementById('editCourseName').value = course.name;
                 document.getElementById('editCourseCode').value = course.code;
@@ -1012,30 +998,24 @@
                 document.getElementById('editCourseDescription').value = course.description || '';
                 document.getElementById('courseModal').style.display = 'block';
             }
-
             updateCourse() {
                 const courseId = parseInt(document.getElementById('editCourseId').value);
                 const course = this.courses.find(c => c.id === courseId);
-
                 if (!course) {
                     this.showNotification('Course not found.', 'error');
                     return;
                 }
-
                 const name = sanitizeInput(document.getElementById('editCourseName').value.trim());
                 const code = sanitizeInput(document.getElementById('editCourseCode').value.trim());
-
                 if (!name || !code) {
                     this.showNotification('Course name and code are required.', 'error');
                     return;
                 }
-
                 course.name = name;
                 course.code = code;
                 course.instructor = sanitizeInput(document.getElementById('editInstructor').value.trim());
                 course.semester = document.getElementById('editSemester').value;
                 course.description = sanitizeInput(document.getElementById('editCourseDescription').value.trim());
-
                 this.saveCourses();
                 this.renderCourses();
                 this.updateCourseSelect();
@@ -1043,20 +1023,17 @@
                 document.getElementById('courseModal').style.display = 'none';
                 this.showNotification('Course updated successfully!', 'success');
             }
-
             deleteCourse(courseId) {
                 const course = this.courses.find(c => c.id === courseId);
                 if (!course) {
                     this.showNotification('Course not found.', 'error');
                     return;
                 }
-
                 const relatedTasks = this.tasks.filter(t => t.courseId === courseId).length;
                 let confirmMessage = `Are you sure you want to delete "${course.name}"?`;
                 if (relatedTasks > 0) {
                     confirmMessage += `\n\nThis will also delete ${relatedTasks} related assignment(s).`;
                 }
-
                 if (confirm(confirmMessage)) {
                     this.courses = this.courses.filter(c => c.id !== courseId);
                     this.tasks = this.tasks.filter(t => t.courseId !== courseId);
@@ -1069,7 +1046,6 @@
                     this.showNotification('Course and related assignments deleted.', 'success');
                 }
             }
-
             renderCourses() {
                 const coursesGrid = document.getElementById('coursesGrid');
                 if (this.courses.length === 0) {
@@ -1083,13 +1059,11 @@
                 }
                 coursesGrid.innerHTML = this.courses.map(course => this.createCourseHTML(course)).join('');
             }
-
             createCourseHTML(course) {
                 const courseTasks = this.tasks.filter(t => t.courseId === course.id);
                 const totalTasks = courseTasks.length;
                 const completedTasks = courseTasks.filter(t => t.completed).length;
                 const overdueTasks = courseTasks.filter(t => !t.completed && new Date(t.dueDate) < new Date()).length;
-
                 return `
                     <div class="course-card">
                         <div class="course-header">
@@ -1121,7 +1095,6 @@
                     </div>
                 `;
             }
-
             // Task Management
             addTask() {
                 const title = sanitizeInput(document.getElementById('taskTitle').value.trim());
@@ -1129,18 +1102,15 @@
                 const dueDate = document.getElementById('dueDate').value;
                 const priority = document.getElementById('priority').value;
                 const description = sanitizeInput(document.getElementById('description').value.trim());
-
                 if (!title || !courseId || !dueDate) {
                     this.showNotification('Please fill in all required fields.', 'error');
                     return;
                 }
-
                 const course = this.courses.find(c => c.id === courseId);
                 if (!course) {
                     this.showNotification('Please select a valid course.', 'error');
                     return;
                 }
-
                 const task = {
                     id: Date.now(),
                     title,
@@ -1152,7 +1122,6 @@
                     completed: false,
                     createdAt: new Date()
                 };
-
                 this.tasks.push(task);
                 this.saveTasks();
                 this.renderTasks();
@@ -1161,14 +1130,12 @@
                 this.clearTaskForm();
                 this.showNotification('Assignment added successfully!', 'success');
             }
-
             editTask(taskId) {
                 const task = this.tasks.find(t => t.id === taskId);
                 if (!task) {
                     this.showNotification('Task not found.', 'error');
                     return;
                 }
-
                 document.getElementById('editTaskId').value = task.id;
                 document.getElementById('editTaskTitle').value = task.title;
                 document.getElementById('editCourseSelect').value = task.courseId;
@@ -1178,40 +1145,33 @@
                 this.updateCourseSelectForEdit();
                 document.getElementById('taskModal').style.display = 'block';
             }
-
             updateTask() {
                 const taskId = parseInt(document.getElementById('editTaskId').value);
                 const task = this.tasks.find(t => t.id === taskId);
-
                 if (!task) {
                     this.showNotification('Task not found.', 'error');
                     return;
                 }
-
                 const title = sanitizeInput(document.getElementById('editTaskTitle').value.trim());
                 const courseId = parseInt(document.getElementById('editCourseSelect').value);
                 const dueDate = document.getElementById('editDueDate').value;
                 const priority = document.getElementById('editPriority').value;
                 const description = sanitizeInput(document.getElementById('editDescription').value.trim());
-
                 if (!title || !courseId || !dueDate) {
                     this.showNotification('Please fill in all required fields.', 'error');
                     return;
                 }
-
                 const course = this.courses.find(c => c.id === courseId);
                 if (!course) {
                     this.showNotification('Please select a valid course.', 'error');
                     return;
                 }
-
                 task.title = title;
                 task.courseId = courseId;
                 task.courseName = course.name;
                 task.dueDate = new Date(dueDate);
                 task.priority = priority;
                 task.description = description;
-
                 this.saveTasks();
                 this.renderTasks();
                 this.renderCourses();
@@ -1219,14 +1179,12 @@
                 document.getElementById('taskModal').style.display = 'none';
                 this.showNotification('Assignment updated successfully!', 'success');
             }
-
             completeTask(id) {
                 const task = this.tasks.find(t => t.id === id);
                 if (!task) {
                     this.showNotification('Task not found.', 'error');
                     return;
                 }
-
                 task.completed = !task.completed;
                 this.saveTasks();
                 this.renderTasks();
@@ -1234,16 +1192,13 @@
                 this.updateStats();
                 this.showNotification(task.completed ? 'Assignment completed!' : 'Assignment marked as pending.', 'success');
             }
-
             deleteTask(id) {
                 if (!confirm('Are you sure you want to delete this assignment?')) return;
-
                 const task = this.tasks.find(t => t.id === id);
                 if (!task) {
                     this.showNotification('Task not found.', 'error');
                     return;
                 }
-
                 this.tasks = this.tasks.filter(t => t.id !== id);
                 this.saveTasks();
                 this.renderTasks();
@@ -1251,11 +1206,9 @@
                 this.updateStats();
                 this.showNotification('Assignment deleted successfully!', 'success');
             }
-
             renderTasks() {
                 const taskList = document.getElementById('taskList');
                 const filteredTasks = this.getFilteredTasks();
-
                 if (filteredTasks.length === 0) {
                     taskList.innerHTML = `
                         <div class="empty-state">
@@ -1265,7 +1218,6 @@
                     `;
                     return;
                 }
-
                 filteredTasks.sort((a, b) => {
                     if (a.completed !== b.completed) return a.completed - b.completed;
                     if (a.priority !== b.priority) {
@@ -1274,10 +1226,8 @@
                     }
                     return new Date(a.dueDate) - new Date(b.dueDate);
                 });
-
                 taskList.innerHTML = filteredTasks.map(task => this.createTaskHTML(task)).join('');
             }
-
             createTaskHTML(task) {
                 const dueDate = new Date(task.dueDate);
                 const now = new Date();
@@ -1285,7 +1235,6 @@
                 const isDueSoon = !task.completed && !isOverdue && (dueDate - now) < (24 * 60 * 60 * 1000);
                 const dueDateClass = isOverdue ? 'overdue' : isDueSoon ? 'due-soon' : '';
                 const taskClass = task.completed ? 'completed' : '';
-
                 return `
                     <div class="task-item ${task.priority}-priority ${taskClass}">
                         <div class="task-header">
@@ -1313,7 +1262,6 @@
                     </div>
                 `;
             }
-
             // Calendar Integration
             addToCalendar(taskId) {
                 const task = this.tasks.find(t => t.id === taskId);
@@ -1321,7 +1269,6 @@
                     this.showNotification('Task not found.', 'error');
                     return;
                 }
-
                 const startDate = new Date(task.dueDate);
                 const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1-hour duration
                 const eventData = {
@@ -1333,7 +1280,6 @@
                 };
                 this.openCalendarOptions(eventData);
             }
-
             openCalendarOptions(eventData) {
                 const options = [
                     { name: 'Google Calendar', action: () => this.createGoogleCalendarEvent(eventData) },
@@ -1354,7 +1300,6 @@
                     this.showNotification('Invalid calendar option selected.', 'error');
                 }
             }
-
             createGoogleCalendarEvent(eventData) {
                 const baseUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
                 const params = new URLSearchParams({
@@ -1366,7 +1311,6 @@
                 window.open(`${baseUrl}&${params.toString()}`, '_blank');
                 this.showNotification('Opening Google Calendar event...', 'success');
             }
-
             createOutlookEvent(eventData) {
                 const baseUrl = 'https://outlook.live.com/calendar/0/deeplink/compose';
                 const params = new URLSearchParams({
@@ -1379,7 +1323,6 @@
                 window.open(`${baseUrl}?${params.toString()}`, '_blank');
                 this.showNotification('Opening Outlook Calendar event...', 'success');
             }
-
             createICSFile(eventData) {
                 const icsContent = this.generateICSContent([eventData]);
                 const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
@@ -1389,14 +1332,12 @@
                 link.click();
                 this.showNotification('Downloaded .ics file.', 'success');
             }
-
             exportToGoogleCalendar() {
                 const pendingTasks = this.tasks.filter(t => !t.completed);
                 if (pendingTasks.length === 0) {
                     this.showNotification('No pending assignments to export.', 'info');
                     return;
                 }
-
                 pendingTasks.forEach(task => {
                     const startDate = new Date(task.dueDate);
                     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
@@ -1411,14 +1352,12 @@
                 });
                 this.showNotification(`Opening ${pendingTasks.length} Google Calendar events...`, 'success');
             }
-
             exportToOutlook() {
                 const pendingTasks = this.tasks.filter(t => !t.completed);
                 if (pendingTasks.length === 0) {
                     this.showNotification('No pending assignments to export.', 'info');
                     return;
                 }
-
                 pendingTasks.forEach((task, index) => {
                     const startDate = new Date(task.dueDate);
                     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
@@ -1433,18 +1372,15 @@
                 });
                 this.showNotification(`Opening ${pendingTasks.length} Outlook Calendar events...`, 'success');
             }
-
             exportToAppleCalendar() {
                 this.exportToICS();
             }
-
             exportToICS() {
                 const pendingTasks = this.tasks.filter(t => !t.completed);
                 if (pendingTasks.length === 0) {
                     this.showNotification('No pending assignments to export.', 'info');
                     return;
                 }
-
                 const events = pendingTasks.map(task => {
                     const startDate = new Date(task.dueDate);
                     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
@@ -1456,7 +1392,6 @@
                         location: task.courseName
                     };
                 });
-
                 const icsContent = this.generateICSContent(events);
                 const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
                 const link = document.createElement('a');
@@ -1465,7 +1400,6 @@
                 link.click();
                 this.showNotification(`Downloaded ${events.length} assignments as .ics file.`, 'success');
             }
-
             generateICSContent(events) {
                 let icsContent = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TaskSchedulerPro//EN\r\n';
                 events.forEach(event => {
@@ -1484,35 +1418,28 @@
                 icsContent += 'END:VCALENDAR\r\n';
                 return icsContent;
             }
-
             formatDateForCalendar(date) {
                 return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
             }
-
             // Alert System
             startAlertSystem() {
                 // Initial alert check after 2 seconds
                 setTimeout(() => this.checkAlerts(), 2000);
             }
-
             checkAlerts() {
                 if (!this.notificationPermission) return;
                 const now = new Date();
                 const pendingTasks = this.tasks.filter(t => !t.completed);
-
                 pendingTasks.forEach(task => {
                     const dueDate = new Date(task.dueDate);
                     const timeDiff = dueDate - now;
                     const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-
                     const alert1Day = document.getElementById('alert1day')?.checked;
                     const alert3Days = document.getElementById('alert3days')?.checked;
                     const alert1Week = document.getElementById('alert1week')?.checked;
                     const alertOverdue = document.getElementById('alertOverdue')?.checked;
-
                     let shouldAlert = false;
                     let alertMessage = '';
-
                     if (alertOverdue && timeDiff < 0) {
                         shouldAlert = true;
                         alertMessage = `OVERDUE: ${task.title} in ${task.courseName}`;
@@ -1526,13 +1453,11 @@
                         shouldAlert = true;
                         alertMessage = `Due in 1 week: ${task.title} in ${task.courseName}`;
                     }
-
                     if (shouldAlert) {
                         this.sendNotification(alertMessage, task);
                     }
                 });
             }
-
             sendNotification(message, task) {
                 if (this.notificationPermission && 'Notification' in window) {
                     new Notification('📚 Task Reminder', {
@@ -1543,7 +1468,6 @@
                 }
                 this.showNotification(message, 'info');
             }
-
             // Notification Permission
             async requestNotificationPermission() {
                 if ('Notification' in window) {
@@ -1564,14 +1488,12 @@
                     this.showNotification('Notifications not supported in this browser.', 'error');
                 }
             }
-
             checkNotificationPermission() {
                 if ('Notification' in window) {
                     this.notificationPermission = Notification.permission === 'granted';
                     this.updateNotificationButton();
                 }
             }
-
             updateNotificationButton() {
                 const btn = document.querySelector('.notification-permission');
                 if (this.notificationPermission) {
@@ -1582,7 +1504,6 @@
                     btn.classList.remove('enabled');
                 }
             }
-
             // Utility Functions
             getFilteredTasks() {
                 const now = new Date();
@@ -1601,20 +1522,17 @@
                     }
                 });
             }
-
             updateStats() {
                 const now = new Date();
                 const total = this.tasks.length;
                 const pending = this.tasks.filter(t => !t.completed).length;
                 const completed = this.tasks.filter(t => t.completed).length;
                 const overdue = this.tasks.filter(t => !t.completed && new Date(t.dueDate) < now).length;
-
                 document.getElementById('totalTasks').textContent = total;
                 document.getElementById('pendingTasks').textContent = pending;
                 document.getElementById('completedTasks').textContent = completed;
                 document.getElementById('overdueTasks').textContent = overdue;
             }
-
             updateCourseSelect() {
                 const courseSelect = document.getElementById('courseSelect');
                 courseSelect.innerHTML = '<option value="">Select a course...</option>';
@@ -1625,7 +1543,6 @@
                     courseSelect.appendChild(option);
                 });
             }
-
             updateCourseSelectForEdit() {
                 const courseSelect = document.getElementById('editCourseSelect');
                 courseSelect.innerHTML = '<option value="">Select a course...</option>';
@@ -1636,12 +1553,10 @@
                     courseSelect.appendChild(option);
                 });
             }
-
             setActiveFilter(activeBtn) {
                 document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
                 activeBtn.classList.add('active');
             }
-
             setMinDateTime() {
                 const now = new Date();
                 const offset = now.getTimezoneOffset() * 60000;
@@ -1649,7 +1564,6 @@
                 document.getElementById('dueDate').min = localISOTime;
                 document.getElementById('editDueDate').min = localISOTime;
             }
-
             formatDateTime(date) {
                 const options = {
                     month: 'short',
@@ -1660,16 +1574,13 @@
                 };
                 return date.toLocaleDateString('en-US', options);
             }
-
             clearCourseForm() {
                 document.getElementById('courseForm').reset();
             }
-
             clearTaskForm() {
                 document.getElementById('taskForm').reset();
                 this.setMinDateTime();
             }
-
             showNotification(message, type = 'info') {
                 const notification = document.createElement('div');
                 notification.className = 'notification-popup';
@@ -1680,7 +1591,6 @@
                     notification.remove();
                 }, 4000);
             }
-
             // Data Management
             loadCourses() {
                 try {
@@ -1695,7 +1605,6 @@
                     return [];
                 }
             }
-
             saveCourses() {
                 try {
                     localStorage.setItem('taskSchedulerCourses', JSON.stringify(this.courses));
@@ -1704,7 +1613,6 @@
                     this.showNotification('Failed to save courses.', 'error');
                 }
             }
-
             loadTasks() {
                 try {
                     const tasks = JSON.parse(localStorage.getItem('taskSchedulerTasks') || '[]');
@@ -1719,7 +1627,6 @@
                     return [];
                 }
             }
-
             saveTasks() {
                 try {
                     localStorage.setItem('taskSchedulerTasks', JSON.stringify(this.tasks));
@@ -1729,7 +1636,6 @@
                 }
             }
         }
-
         // Tab Management
         function openTab(evt, tabName) {
             const tabcontent = document.getElementsByClassName('tab-content');
@@ -1743,28 +1649,22 @@
             document.getElementById(tabName).classList.add('active');
             evt.currentTarget.classList.add('active');
         }
-
         // Global Functions
         function requestNotificationPermission() {
             taskScheduler.requestNotificationPermission();
         }
-
         function exportToGoogleCalendar() {
             taskScheduler.exportToGoogleCalendar();
         }
-
         function exportToOutlook() {
             taskScheduler.exportToOutlook();
         }
-
         function exportToAppleCalendar() {
             taskScheduler.exportToAppleCalendar();
         }
-
         function exportToICS() {
             taskScheduler.exportToICS();
         }
-
         // Initialize the task scheduler
         const taskScheduler = new TaskSchedulerPro();
     </script>
