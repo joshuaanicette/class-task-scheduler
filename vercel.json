@@ -1,10 +1,8 @@
 {
-  "version": 2,
-  "name": "class-task-scheduler",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
