@@ -50,4 +50,4 @@ MIT License - feel free to use and modify!
 
 ---
 
-Made with ❤️ for students everywhere
+Made for students everywhere
