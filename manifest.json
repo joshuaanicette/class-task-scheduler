@@ -2,7 +2,7 @@
   "name": "Class Task Scheduler Pro",
   "short_name": "TaskScheduler",
   "description": "Complete academic task management with grades, calendar, and analytics",
-  "start_url": "./task-scheduler-pro-enhanced.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#4facfe",
