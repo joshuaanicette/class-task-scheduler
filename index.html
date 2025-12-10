@@ -1549,13 +1549,21 @@
                 // Course form
                 document.getElementById('courseForm').addEventListener('submit', (e) => {
                     e.preventDefault();
-                    this.addCourse();
+                    if (this.editingCourseId) {
+                        this.updateCourse();
+                    } else {
+                        this.addCourse();
+                    }
                 });
                 
                 // Task form
                 document.getElementById('taskForm').addEventListener('submit', (e) => {
                     e.preventDefault();
-                    this.addTask();
+                    if (this.editingTaskId) {
+                        this.updateTask();
+                    } else {
+                        this.addTask();
+                    }
                 });
                 
                 // Syllabus upload
@@ -1934,6 +1942,13 @@
                 this.renderCategories();
                 document.getElementById('syllabusUpload').classList.remove('has-file');
                 document.getElementById('syllabusUpload').innerHTML = '<p>📎 Click to upload syllabus PDF</p>';
+                
+                // Always reset to add mode
+                const addButton = document.querySelector('#courses .add-btn');
+                if (addButton) {
+                    addButton.textContent = '➕ Add Course';
+                }
+                this.editingCourseId = null;
             }
 
             renderCourses() {
@@ -2102,10 +2117,9 @@
                 this.editingCourseId = courseId;
                 
                 // Change button text
-                const addButton = document.querySelector('.add-btn');
+                const addButton = document.querySelector('#courses .add-btn');
                 if (addButton) {
                     addButton.textContent = '💾 Update Course';
-                    addButton.onclick = () => this.updateCourse();
                 }
                 
                 // Scroll to form
@@ -2155,15 +2169,15 @@
                     this.updateGradeCalcCourseSelect();
                     this.clearCourseForm();
                     this.renderProgress();
-                    this.showNotification('Course updated!', 'success');
                     
                     // Reset button
-                    const addButton = document.querySelector('.add-btn');
+                    const addButton = document.querySelector('#courses .add-btn');
                     if (addButton) {
                         addButton.textContent = '➕ Add Course';
-                        addButton.onclick = () => this.addCourse();
                     }
                     this.editingCourseId = null;
+                    
+                    this.showNotification('Course updated!', 'success');
                 }
             }
             
@@ -2254,7 +2268,13 @@
                 
                 // Set tags
                 this.tags = task.tags ? [...task.tags] : [];
-                this.renderTagsDisplay();
+                const tagsContainer = document.getElementById('tagsContainer');
+                if (tagsContainer) {
+                    this.renderTags(tagsContainer, this.tags, (tagToRemove) => {
+                        this.tags = this.tags.filter(t => t !== tagToRemove);
+                        this.renderTags(tagsContainer, this.tags, arguments.callee);
+                    });
+                }
                 
                 // Set attachments
                 if (task.attachments && task.attachments.length > 0) {
@@ -2265,16 +2285,15 @@
                 this.editingTaskId = taskId;
                 
                 // Change button text
-                const addButton = document.querySelector('#tasks .add-btn');
+                const addButton = document.querySelector('#assignments .add-btn');
                 if (addButton) {
                     addButton.textContent = '💾 Update Assignment';
-                    addButton.onclick = () => this.updateTask();
                 }
                 
-                // Switch to tasks tab and scroll to form
-                document.querySelector('[onclick*="tasks"]').click();
+                // Switch to assignments tab and scroll to form
+                document.querySelector('[onclick*="assignments"]').click();
                 setTimeout(() => {
-                    document.querySelector('#tasks .form-section').scrollIntoView({ behavior: 'smooth' });
+                    document.querySelector('#assignments .form-section').scrollIntoView({ behavior: 'smooth' });
                 }, 100);
                 
                 this.showNotification('Editing assignment - update when ready', 'info');
@@ -2328,15 +2347,15 @@
                     this.renderTodayAssignments();
                     this.updateStats();
                     this.clearTaskForm();
-                    this.showNotification('Assignment updated!', 'success');
                     
                     // Reset button
-                    const addButton = document.querySelector('#tasks .add-btn');
+                    const addButton = document.querySelector('#assignments .add-btn');
                     if (addButton) {
                         addButton.textContent = '➕ Add Assignment';
-                        addButton.onclick = () => this.addTask();
                     }
                     this.editingTaskId = null;
+                    
+                    this.showNotification('Assignment updated!', 'success');
                 }
             }
             
@@ -2930,6 +2949,19 @@
                 document.getElementById('taskForm').reset();
                 this.tags = [];
                 this.setMinDateTime();
+                
+                // Clear tags display
+                const tagsContainer = document.getElementById('tagsContainer');
+                if (tagsContainer) {
+                    this.renderTags(tagsContainer, [], () => {});
+                }
+                
+                // Always reset to add mode
+                const addButton = document.querySelector('#assignments .add-btn');
+                if (addButton) {
+                    addButton.textContent = '➕ Add Assignment';
+                }
+                this.editingTaskId = null;
             }
 
             showNotification(message, type = 'info') {
