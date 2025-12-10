@@ -1153,7 +1153,11 @@
         </div>
         
         <div class="search-bar">
-            <input type="text" class="search-input" id="globalSearch" placeholder="🔍 Search courses, assignments, tags...">
+            <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+                <input type="text" class="search-input" id="globalSearch" placeholder="🔍 Search courses, assignments, tags...">
+                <button id="clearSearch" style="display: none; position: absolute; right: 15px; background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9em;">Clear ✕</button>
+            </div>
+            <div id="searchStatus" style="margin-top: 10px; font-size: 0.9em; color: var(--text-secondary); display: none;"></div>
         </div>
         
         <div class="tab-container">
@@ -1280,14 +1284,26 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="categorySelect">Grade Category</label>
-                                <select id="categorySelect">
-                                    <option value="">Select category...</option>
+                                <label for="assignmentType">Assignment Type *</label>
+                                <select id="assignmentType" required>
+                                    <option value="">Select type...</option>
+                                    <option value="assignment">Assignment</option>
+                                    <option value="exam">Exam</option>
+                                    <option value="quiz">Quiz</option>
+                                    <option value="project">Project</option>
+                                    <option value="homework">Homework</option>
+                                    <option value="lab">Lab</option>
+                                    <option value="reading">Reading</option>
+                                    <option value="presentation">Presentation</option>
+                                    <option value="paper">Paper/Essay</option>
+                                    <option value="other">Other</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="dueDate">Due Date & Time *</label>
-                                <input type="datetime-local" id="dueDate" required>
+                                <label for="categorySelect">Grade Category (optional)</label>
+                                <select id="categorySelect">
+                                    <option value="">Auto-assign from type</option>
+                                </select>
                             </div>
                         </div>
                         <div class="form-row">
@@ -1299,6 +1315,12 @@
                                     <option value="low">Low</option>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label for="dueDate">Due Date & Time *</label>
+                                <input type="datetime-local" id="dueDate" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
                             <div class="form-group">
                                 <label for="estimatedTime">Est. Time (hours)</label>
                                 <input type="number" id="estimatedTime" step="0.5" min="0" placeholder="2.5">
@@ -1576,6 +1598,45 @@
                     this.searchTerm = e.target.value.toLowerCase();
                     this.renderCourses();
                     this.renderTasks();
+                    
+                    // Show/hide clear button and status
+                    const clearBtn = document.getElementById('clearSearch');
+                    const statusDiv = document.getElementById('searchStatus');
+                    
+                    if (this.searchTerm) {
+                        clearBtn.style.display = 'block';
+                        statusDiv.style.display = 'block';
+                        
+                        const courseCount = this.courses.filter(course =>
+                            course.name.toLowerCase().includes(this.searchTerm) ||
+                            course.code.toLowerCase().includes(this.searchTerm) ||
+                            (course.instructor && course.instructor.toLowerCase().includes(this.searchTerm))
+                        ).length;
+                        
+                        const taskCount = this.tasks.filter(task =>
+                            task.title.toLowerCase().includes(this.searchTerm) ||
+                            task.courseName.toLowerCase().includes(this.searchTerm) ||
+                            (task.description && task.description.toLowerCase().includes(this.searchTerm)) ||
+                            (task.tags && task.tags.some(tag => tag.toLowerCase().includes(this.searchTerm))) ||
+                            (task.type && task.type.toLowerCase().includes(this.searchTerm)) ||
+                            (task.category && task.category.toLowerCase().includes(this.searchTerm))
+                        ).length;
+                        
+                        statusDiv.textContent = `Found ${courseCount} course${courseCount !== 1 ? 's' : ''} and ${taskCount} assignment${taskCount !== 1 ? 's' : ''} matching "${e.target.value}"`;
+                    } else {
+                        clearBtn.style.display = 'none';
+                        statusDiv.style.display = 'none';
+                    }
+                });
+                
+                // Clear search button
+                document.getElementById('clearSearch').addEventListener('click', () => {
+                    document.getElementById('globalSearch').value = '';
+                    this.searchTerm = '';
+                    this.renderCourses();
+                    this.renderTasks();
+                    document.getElementById('clearSearch').style.display = 'none';
+                    document.getElementById('searchStatus').style.display = 'none';
                 });
                 
                 // Filters
@@ -2195,10 +2256,43 @@
             }
 
             // Task Management
+            autoMapTypeToCategory(type, courseId) {
+                // Map assignment types to common grade category names
+                const typeMapping = {
+                    'exam': ['Exams', 'Exam', 'Tests', 'Test', 'Midterm', 'Final'],
+                    'quiz': ['Quizzes', 'Quiz'],
+                    'assignment': ['Assignments', 'Assignment', 'Homework', 'HW'],
+                    'project': ['Projects', 'Project'],
+                    'homework': ['Homework', 'HW', 'Assignments', 'Assignment'],
+                    'lab': ['Labs', 'Lab', 'Lab Work'],
+                    'paper': ['Papers', 'Paper', 'Essays', 'Essay', 'Writing'],
+                    'presentation': ['Presentations', 'Presentation'],
+                    'reading': ['Reading', 'Readings'],
+                    'other': null
+                };
+                
+                const course = this.courses.find(c => c.id === courseId);
+                if (!course || !course.gradeCategories || course.gradeCategories.length === 0) {
+                    return null;
+                }
+                
+                // Find matching category
+                const possibleNames = typeMapping[type.toLowerCase()] || [];
+                for (const categoryName of possibleNames) {
+                    const found = course.gradeCategories.find(cat => 
+                        cat.name.toLowerCase() === categoryName.toLowerCase()
+                    );
+                    if (found) return found.name;
+                }
+                
+                return null; // No matching category found
+            }
+            
             addTask() {
                 const title = sanitizeInput(document.getElementById('taskTitle').value.trim());
                 const courseId = parseInt(document.getElementById('courseSelect').value);
-                const category = document.getElementById('categorySelect').value;
+                const type = document.getElementById('assignmentType').value;
+                let category = document.getElementById('categorySelect').value;
                 const dueDate = document.getElementById('dueDate').value;
                 const priority = document.getElementById('priority').value;
                 const description = sanitizeInput(document.getElementById('description').value.trim());
@@ -2207,7 +2301,7 @@
                 const maxPoints = parseFloat(document.getElementById('maxPoints').value) || 100;
                 const attachments = document.getElementById('attachmentUrl').value.split('\n').filter(url => url.trim());
                 
-                if (!title || !courseId || !dueDate) {
+                if (!title || !courseId || !dueDate || !type) {
                     this.showNotification('Fill in required fields', 'error');
                     return;
                 }
@@ -2215,11 +2309,17 @@
                 const course = this.courses.find(c => c.id === courseId);
                 if (!course) return;
                 
+                // Auto-assign category if not manually selected
+                if (!category) {
+                    category = this.autoMapTypeToCategory(type, courseId);
+                }
+                
                 const task = {
                     id: Date.now(),
                     title,
                     courseId,
                     courseName: course.name,
+                    type,
                     category,
                     dueDate: new Date(dueDate),
                     priority,
@@ -2241,7 +2341,7 @@
                 this.renderTodayAssignments();
                 this.updateStats();
                 this.clearTaskForm();
-                this.showNotification('Assignment added!', 'success');
+                this.showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} added!${category ? ' (Auto-assigned to ' + category + ')' : ''}`, 'success');
             }
             
             editTask(taskId) {
@@ -2251,6 +2351,7 @@
                 // Populate form fields
                 document.getElementById('taskTitle').value = task.title;
                 document.getElementById('courseSelect').value = task.courseId;
+                document.getElementById('assignmentType').value = task.type || 'assignment';
                 document.getElementById('description').value = task.description || '';
                 document.getElementById('priority').value = task.priority;
                 document.getElementById('estimatedTime').value = task.estimatedTime || '';
@@ -2304,7 +2405,8 @@
                 
                 const title = sanitizeInput(document.getElementById('taskTitle').value.trim());
                 const courseId = parseInt(document.getElementById('courseSelect').value);
-                const category = document.getElementById('categorySelect').value;
+                const type = document.getElementById('assignmentType').value;
+                let category = document.getElementById('categorySelect').value;
                 const dueDate = document.getElementById('dueDate').value;
                 const priority = document.getElementById('priority').value;
                 const description = sanitizeInput(document.getElementById('description').value.trim());
@@ -2313,13 +2415,18 @@
                 const maxPoints = parseFloat(document.getElementById('maxPoints').value) || 100;
                 const attachments = document.getElementById('attachmentUrl').value.split('\n').filter(url => url.trim());
                 
-                if (!title || !courseId || !dueDate) {
+                if (!title || !courseId || !dueDate || !type) {
                     this.showNotification('Fill in required fields', 'error');
                     return;
                 }
                 
                 const course = this.courses.find(c => c.id === courseId);
                 if (!course) return;
+                
+                // Auto-assign category if not manually selected
+                if (!category) {
+                    category = this.autoMapTypeToCategory(type, courseId);
+                }
                 
                 // Find and update the task
                 const taskIndex = this.tasks.findIndex(t => t.id === this.editingTaskId);
@@ -2329,6 +2436,7 @@
                         title,
                         courseId,
                         courseName: course.name,
+                        type,
                         category,
                         dueDate: new Date(dueDate),
                         priority,
@@ -2361,7 +2469,7 @@
             
             updateCategorySelect(courseId) {
                 const categorySelect = document.getElementById('categorySelect');
-                categorySelect.innerHTML = '<option value="">Select category...</option>';
+                categorySelect.innerHTML = '<option value="">Auto-assign from type</option>';
                 
                 if (!courseId) return;
                 
@@ -2411,7 +2519,10 @@
                     filteredTasks = filteredTasks.filter(task =>
                         task.title.toLowerCase().includes(this.searchTerm) ||
                         task.courseName.toLowerCase().includes(this.searchTerm) ||
-                        (task.description && task.description.toLowerCase().includes(this.searchTerm))
+                        (task.description && task.description.toLowerCase().includes(this.searchTerm)) ||
+                        (task.tags && task.tags.some(tag => tag.toLowerCase().includes(this.searchTerm))) ||
+                        (task.type && task.type.toLowerCase().includes(this.searchTerm)) ||
+                        (task.category && task.category.toLowerCase().includes(this.searchTerm))
                     );
                 }
                 
@@ -2438,6 +2549,7 @@
                 
                 const metadataHTML = `
                     <div class="task-metadata">
+                        ${task.type ? `<div class="metadata-item"><span class="metadata-label">📝</span>${task.type.charAt(0).toUpperCase() + task.type.slice(1)}</div>` : ''}
                         ${task.estimatedTime ? `<div class="metadata-item"><span class="metadata-label">⏱️</span>${task.estimatedTime}h</div>` : ''}
                         ${task.grade ? `<div class="metadata-item"><span class="metadata-label">📊</span>${task.grade}/${task.maxPoints || 100}</div>` : ''}
                         ${task.category ? `<div class="metadata-item"><span class="metadata-label">📁</span>${task.category}</div>` : ''}
