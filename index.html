@@ -1082,6 +1082,47 @@
             white-space: nowrap;
         }
         
+        .today-assignment-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 5px solid var(--accent);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .today-assignment-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .today-assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .today-assignment-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .today-assignment-course {
+            font-size: 0.85em;
+            padding: 4px 10px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .today-assignment-time {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+        
         @media (max-width: 768px) {
             .header-controls {
                 position: static;
@@ -1355,6 +1396,12 @@
                     </div>
                     <div class="calendar-grid" id="calendarGrid"></div>
                 </div>
+                
+                <!-- Today's Assignments List -->
+                <div class="form-section" style="margin-top: 30px;">
+                    <h2>📋 Today's Assignments</h2>
+                    <div id="todayAssignmentsList"></div>
+                </div>
             </div>
         </div>
         
@@ -1479,6 +1526,7 @@
                 this.syllabusText = '';
                 this.editingCourseId = null;
                 this.editingTaskId = null;
+                this.courseColors = {};
                 this.init();
             }
 
@@ -2176,6 +2224,7 @@
                 this.renderTasks();
                 this.renderCourses();
                 this.renderCalendar();
+                this.renderTodayAssignments();
                 this.updateStats();
                 this.clearTaskForm();
                 this.showNotification('Assignment added!', 'success');
@@ -2276,6 +2325,7 @@
                     this.renderTasks();
                     this.renderCourses();
                     this.renderCalendar();
+                    this.renderTodayAssignments();
                     this.updateStats();
                     this.clearTaskForm();
                     this.showNotification('Assignment updated!', 'success');
@@ -2315,6 +2365,8 @@
                 this.saveTasks();
                 this.renderTasks();
                 this.renderCourses();
+                this.renderCalendar();
+                this.renderTodayAssignments();
                 this.updateStats();
                 this.showNotification(task.completed ? 'Completed!' : 'Marked pending', 'success');
             }
@@ -2326,6 +2378,8 @@
                 this.saveTasks();
                 this.renderTasks();
                 this.renderCourses();
+                this.renderCalendar();
+                this.renderTodayAssignments();
                 this.updateStats();
                 this.showNotification('Assignment deleted', 'success');
             }
@@ -2484,6 +2538,68 @@
                 content.innerHTML = html;
             }
             
+            // Course Color Management
+            getCourseColor(courseId) {
+                if (!this.courseColors[courseId]) {
+                    const colors = [
+                        '#667eea', '#764ba2', '#f093fb', '#4facfe',
+                        '#43e97b', '#fa709a', '#fee140', '#30cfd0',
+                        '#a8edea', '#fed6e3', '#c471f5', '#fa8231',
+                        '#17ead9', '#6078ea', '#f76b1c', '#5f72bd'
+                    ];
+                    const index = Object.keys(this.courseColors).length % colors.length;
+                    this.courseColors[courseId] = colors[index];
+                }
+                return this.courseColors[courseId];
+            }
+            
+            // Render Today's Assignments
+            renderTodayAssignments() {
+                const container = document.getElementById('todayAssignmentsList');
+                if (!container) return;
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                const todayTasks = this.tasks.filter(task => {
+                    const taskDate = new Date(task.dueDate);
+                    taskDate.setHours(0, 0, 0, 0);
+                    return taskDate.getTime() === today.getTime() && !task.completed;
+                }).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+                
+                if (todayTasks.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">No assignments due today! 🎉</p>';
+                    return;
+                }
+                
+                container.innerHTML = todayTasks.map(task => {
+                    const course = this.courses.find(c => c.id === task.courseId);
+                    const courseColor = this.getCourseColor(task.courseId);
+                    const dueTime = new Date(task.dueDate).toLocaleTimeString('en-US', { 
+                        hour: 'numeric', 
+                        minute: '2-digit' 
+                    });
+                    
+                    return `
+                        <div class="today-assignment-item" style="border-left-color: ${courseColor}" 
+                             onclick="taskScheduler.editTask(${task.id})">
+                            <div class="today-assignment-header">
+                                <div class="today-assignment-title">${task.title}</div>
+                                <span class="today-assignment-course" style="background: ${courseColor}">
+                                    ${course ? course.code : 'N/A'}
+                                </span>
+                            </div>
+                            <div class="today-assignment-time">
+                                ⏰ Due at ${dueTime}
+                                ${task.priority ? `<span class="priority-badge priority-${task.priority}" style="margin-left: 10px;">${task.priority.toUpperCase()}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
             // Calendar
             renderCalendar() {
                 const year = this.currentMonth.getFullYear();
@@ -2535,11 +2651,13 @@
                     }).slice(0, 3);
                     
                     dayTasks.forEach(task => {
+                        const courseColor = this.getCourseColor(task.courseId);
                         const taskEl = document.createElement('div');
                         taskEl.className = `calendar-task ${task.priority}-priority`;
                         taskEl.textContent = task.title;
                         taskEl.title = `${task.title} - ${task.courseName}\nClick to edit`;
                         taskEl.style.cursor = 'pointer';
+                        taskEl.style.background = courseColor;
                         taskEl.onclick = (e) => {
                             e.stopPropagation();
                             this.editTask(task.id);
@@ -2549,21 +2667,27 @@
                     
                     calendarGrid.appendChild(dayEl);
                 }
+                
+                // Render today's assignments list
+                this.renderTodayAssignments();
             }
             
             previousMonth() {
                 this.currentMonth.setMonth(this.currentMonth.getMonth() - 1);
                 this.renderCalendar();
+                this.renderTodayAssignments();
             }
             
             nextMonth() {
                 this.currentMonth.setMonth(this.currentMonth.getMonth() + 1);
                 this.renderCalendar();
+                this.renderTodayAssignments();
             }
             
             todayMonth() {
                 this.currentMonth = new Date();
                 this.renderCalendar();
+                this.renderTodayAssignments();
             }
             
             // Progress Dashboard
