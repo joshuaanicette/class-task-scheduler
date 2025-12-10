@@ -1288,7 +1288,9 @@
                                 <select id="assignmentType" required>
                                     <option value="">Select type...</option>
                                     <option value="assignment">Assignment</option>
-                                    <option value="exam">Exam</option>
+                                    <option value="midterm">Midterm Exam</option>
+                                    <option value="final">Final Exam</option>
+                                    <option value="exam">Other Exam</option>
                                     <option value="quiz">Quiz</option>
                                     <option value="project">Project</option>
                                     <option value="homework">Homework</option>
@@ -2258,8 +2260,11 @@
             // Task Management
             autoMapTypeToCategory(type, courseId) {
                 // Map assignment types to common grade category names
+                // ORDER MATTERS: Most specific categories first, then general fallbacks
                 const typeMapping = {
-                    'exam': ['Exams', 'Exam', 'Tests', 'Test', 'Midterm', 'Final'],
+                    'midterm': ['Midterms', 'Midterm', 'Exams', 'Exam', 'Tests', 'Test'],
+                    'final': ['Finals', 'Final', 'Exams', 'Exam', 'Tests', 'Test'],
+                    'exam': ['Exams', 'Exam', 'Tests', 'Test'],
                     'quiz': ['Quizzes', 'Quiz'],
                     'assignment': ['Assignments', 'Assignment', 'Homework', 'HW'],
                     'project': ['Projects', 'Project'],
@@ -2276,7 +2281,7 @@
                     return null;
                 }
                 
-                // Find matching category
+                // Find matching category - checks in priority order
                 const possibleNames = typeMapping[type.toLowerCase()] || [];
                 for (const categoryName of possibleNames) {
                     const found = course.gradeCategories.find(cat => 
@@ -2341,7 +2346,25 @@
                 this.renderTodayAssignments();
                 this.updateStats();
                 this.clearTaskForm();
-                this.showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} added!${category ? ' (Auto-assigned to ' + category + ')' : ''}`, 'success');
+                
+                // Format type name for notification
+                const typeNames = {
+                    'midterm': 'Midterm Exam',
+                    'final': 'Final Exam',
+                    'exam': 'Exam',
+                    'quiz': 'Quiz',
+                    'assignment': 'Assignment',
+                    'project': 'Project',
+                    'homework': 'Homework',
+                    'lab': 'Lab',
+                    'reading': 'Reading',
+                    'presentation': 'Presentation',
+                    'paper': 'Paper/Essay',
+                    'other': 'Other'
+                };
+                const typeName = typeNames[type.toLowerCase()] || type.charAt(0).toUpperCase() + type.slice(1);
+                
+                this.showNotification(`${typeName} added!${category ? ' (Auto-assigned to ' + category + ')' : ''}`, 'success');
             }
             
             editTask(taskId) {
@@ -2547,9 +2570,28 @@
                 const categoryBadge = task.category ? 
                     `<span class="tag" style="background: var(--info);">${task.category}</span>` : '';
                 
+                // Format type name for display
+                const formatTypeName = (type) => {
+                    const typeNames = {
+                        'midterm': 'Midterm Exam',
+                        'final': 'Final Exam',
+                        'exam': 'Exam',
+                        'quiz': 'Quiz',
+                        'assignment': 'Assignment',
+                        'project': 'Project',
+                        'homework': 'Homework',
+                        'lab': 'Lab',
+                        'reading': 'Reading',
+                        'presentation': 'Presentation',
+                        'paper': 'Paper/Essay',
+                        'other': 'Other'
+                    };
+                    return typeNames[type.toLowerCase()] || type.charAt(0).toUpperCase() + type.slice(1);
+                };
+                
                 const metadataHTML = `
                     <div class="task-metadata">
-                        ${task.type ? `<div class="metadata-item"><span class="metadata-label">📝</span>${task.type.charAt(0).toUpperCase() + task.type.slice(1)}</div>` : ''}
+                        ${task.type ? `<div class="metadata-item"><span class="metadata-label">📝</span>${formatTypeName(task.type)}</div>` : ''}
                         ${task.estimatedTime ? `<div class="metadata-item"><span class="metadata-label">⏱️</span>${task.estimatedTime}h</div>` : ''}
                         ${task.grade ? `<div class="metadata-item"><span class="metadata-label">📊</span>${task.grade}/${task.maxPoints || 100}</div>` : ''}
                         ${task.category ? `<div class="metadata-item"><span class="metadata-label">📁</span>${task.category}</div>` : ''}
