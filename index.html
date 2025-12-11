@@ -533,7 +533,19 @@
         }
         
         .form-group select[multiple] {
-            height: 100px;
+            height: 120px;
+            padding: 10px;
+        }
+        
+        .form-group select[multiple] option {
+            padding: 8px;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+        
+        .form-group select[multiple] option:checked {
+            background: var(--accent) !important;
+            color: white;
         }
         
         .file-upload {
@@ -1420,18 +1432,20 @@
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="meetingDays">Meeting Days</label>
+                                <label for="meetingDays">Meeting Days (hold Ctrl/Cmd to select multiple)</label>
                                 <select id="meetingDays" multiple>
-                                    <option value="Monday">Monday</option>
-                                    <option value="Tuesday">Tuesday</option>
-                                    <option value="Wednesday">Wednesday</option>
-                                    <option value="Thursday">Thursday</option>
-                                    <option value="Friday">Friday</option>
+                                    <option value="Mon">Monday</option>
+                                    <option value="Tue">Tuesday</option>
+                                    <option value="Wed">Wednesday</option>
+                                    <option value="Thu">Thursday</option>
+                                    <option value="Fri">Friday</option>
+                                    <option value="Sat">Saturday</option>
+                                    <option value="Sun">Sunday</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="meetingTime">Meeting Time</label>
-                                <input type="time" id="meetingTime">
+                                <label for="meetingTime">Meeting Time (e.g., "10:00 AM - 11:30 AM")</label>
+                                <input type="text" id="meetingTime" placeholder="10:00 AM - 11:30 AM">
                             </div>
                         </div>
                         
