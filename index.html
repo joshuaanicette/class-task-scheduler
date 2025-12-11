@@ -2301,6 +2301,7 @@
                 this.updateWhatIfCourseSelect();
                 this.clearCourseForm();
                 this.renderProgress();
+                this.renderWeeklySchedule();
                 this.showNotification('Course added!', 'success');
             }
 
@@ -2540,6 +2541,7 @@
                 this.updateWhatIfCourseSelect();
                     this.clearCourseForm();
                     this.renderProgress();
+                    this.renderWeeklySchedule();
                     
                     // Reset button
                     const addButton = document.querySelector('#courses .add-btn');
@@ -2562,6 +2564,7 @@
                 this.renderCourses();
                 this.renderTasks();
                 this.updateStats();
+                this.renderWeeklySchedule();
                 this.showNotification('Course deleted', 'success');
             }
 
@@ -3229,7 +3232,21 @@
                     const grade = this.calculateCourseGrade(course.id);
                     const gradeNum = this.gradeToNumber(grade);
                     if (gradeNum && course.credits) {
-                        totalPoints += (gradeNum / 25) * course.credits;
+                        // Convert percentage to 4.0 GPA scale
+                        let gpaPoints;
+                        if (gradeNum >= 93) gpaPoints = 4.0;
+                        else if (gradeNum >= 90) gpaPoints = 3.7;
+                        else if (gradeNum >= 87) gpaPoints = 3.3;
+                        else if (gradeNum >= 83) gpaPoints = 3.0;
+                        else if (gradeNum >= 80) gpaPoints = 2.7;
+                        else if (gradeNum >= 77) gpaPoints = 2.3;
+                        else if (gradeNum >= 73) gpaPoints = 2.0;
+                        else if (gradeNum >= 70) gpaPoints = 1.7;
+                        else if (gradeNum >= 67) gpaPoints = 1.3;
+                        else if (gradeNum >= 65) gpaPoints = 1.0;
+                        else gpaPoints = 0.0;
+                        
+                        totalPoints += gpaPoints * course.credits;
                         totalCredits += course.credits;
                     }
                 });
@@ -3608,10 +3625,16 @@
                 const monthTime = monthTasks.reduce((sum, t) => sum + (t.estimatedTime || 0), 0);
                 const semesterTime = completedTasks.reduce((sum, t) => sum + (t.estimatedTime || 0), 0);
                 
-                document.getElementById('totalTimeWeek').textContent = weekTime.toFixed(1) + 'h';
-                document.getElementById('totalTimeMonth').textContent = monthTime.toFixed(1) + 'h';
-                document.getElementById('totalTimeSemester').textContent = semesterTime.toFixed(1) + 'h';
-                document.getElementById('averageTimeDay').textContent = (weekTime / 7).toFixed(1) + 'h';
+                // Only update if elements exist
+                const weekEl = document.getElementById('totalTimeWeek');
+                const monthEl = document.getElementById('totalTimeMonth');
+                const semesterEl = document.getElementById('totalTimeSemester');
+                const avgEl = document.getElementById('averageTimeDay');
+                
+                if (weekEl) weekEl.textContent = weekTime.toFixed(1) + 'h';
+                if (monthEl) monthEl.textContent = monthTime.toFixed(1) + 'h';
+                if (semesterEl) semesterEl.textContent = semesterTime.toFixed(1) + 'h';
+                if (avgEl) avgEl.textContent = (weekTime / 7).toFixed(1) + 'h';
                 
                 // Time breakdown by course
                 this.renderTimeBreakdownByCourse();
