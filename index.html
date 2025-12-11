@@ -31,6 +31,7 @@
             --info: #17a2b8;
         }
         
+        /* Dark Theme */
         body.dark-mode {
             --primary-bg: #1a1a2e;
             --secondary-bg: #16213e;
@@ -41,6 +42,97 @@
             --text-secondary: #b0b0b0;
             --border-color: #2a4a6a;
             --hover-bg: #1a3a5a;
+        }
+        
+        /* Ocean Theme */
+        body.ocean-theme {
+            --primary-bg: #0575e6;
+            --secondary-bg: #021b79;
+            --accent: #00d2ff;
+            --accent-light: #3a7bd5;
+            --card-bg: white;
+            --text-primary: #1a1a1a;
+            --text-secondary: #555;
+            --border-color: #d0e7ff;
+            --hover-bg: #e6f3ff;
+        }
+        
+        /* Forest Theme */
+        body.forest-theme {
+            --primary-bg: #11998e;
+            --secondary-bg: #38ef7d;
+            --accent: #06d6a0;
+            --accent-light: #7de890;
+            --card-bg: white;
+            --text-primary: #2d3436;
+            --text-secondary: #636e72;
+            --border-color: #dfe6e9;
+            --hover-bg: #f0f9f5;
+        }
+        
+        /* Sunset Theme */
+        body.sunset-theme {
+            --primary-bg: #ff6b6b;
+            --secondary-bg: #feca57;
+            --accent: #ee5a6f;
+            --accent-light: #ff9ff3;
+            --card-bg: white;
+            --text-primary: #2d3436;
+            --text-secondary: #636e72;
+            --border-color: #ffe5e5;
+            --hover-bg: #fff5f5;
+        }
+        
+        /* Purple Dream Theme */
+        body.purple-theme {
+            --primary-bg: #a770ef;
+            --secondary-bg: #cf8bf3;
+            --accent: #fdb99b;
+            --accent-light: #c471ed;
+            --card-bg: white;
+            --text-primary: #2d3436;
+            --text-secondary: #636e72;
+            --border-color: #f3e5ff;
+            --hover-bg: #faf5ff;
+        }
+        
+        /* Midnight Theme */
+        body.midnight-theme {
+            --primary-bg: #232526;
+            --secondary-bg: #414345;
+            --accent: #4facfe;
+            --accent-light: #00f2fe;
+            --card-bg: #2c2f33;
+            --text-primary: #e8e8e8;
+            --text-secondary: #b9bbbe;
+            --border-color: #40444b;
+            --hover-bg: #36393f;
+        }
+        
+        /* Rose Gold Theme */
+        body.rosegold-theme {
+            --primary-bg: #eb3349;
+            --secondary-bg: #f45c43;
+            --accent: #ff758c;
+            --accent-light: #ff7eb3;
+            --card-bg: white;
+            --text-primary: #2d3436;
+            --text-secondary: #636e72;
+            --border-color: #ffe5eb;
+            --hover-bg: #fff0f3;
+        }
+        
+        /* Mint Theme */
+        body.mint-theme {
+            --primary-bg: #56ab2f;
+            --secondary-bg: #a8e063;
+            --accent: #72efdd;
+            --accent-light: #64dfdf;
+            --card-bg: white;
+            --text-primary: #2d3436;
+            --text-secondary: #636e72;
+            --border-color: #e8f8e8;
+            --hover-bg: #f0fff0;
         }
         
         body {
@@ -111,6 +203,73 @@
         .icon-btn.enabled {
             background: rgba(40, 167, 69, 0.8);
             border-color: rgba(40, 167, 69, 1);
+        }
+        
+        .theme-selector {
+            position: relative;
+        }
+        
+        .theme-menu {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            z-index: 1000;
+            min-width: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .theme-menu.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .theme-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .theme-option:hover {
+            background: var(--hover-bg);
+        }
+        
+        .theme-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+        }
+        
+        .theme-option span {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .theme-option.active {
+            background: var(--hover-bg);
+            border: 2px solid var(--accent);
         }
         
         .search-bar {
@@ -374,7 +533,19 @@
         }
         
         .form-group select[multiple] {
-            height: 100px;
+            height: 120px;
+            padding: 10px;
+        }
+        
+        .form-group select[multiple] option {
+            padding: 8px;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+        
+        .form-group select[multiple] option:checked {
+            background: var(--accent) !important;
+            color: white;
         }
         
         .file-upload {
@@ -1145,7 +1316,47 @@
             <h1>📚 Class Task Scheduler Pro</h1>
             <p>Complete academic management with advanced grading & syllabus parsing</p>
             <div class="header-controls">
-                <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode">🌙</button>
+                <div class="theme-selector">
+                    <button class="icon-btn" onclick="toggleThemeMenu()" title="Change Theme">🎨</button>
+                    <div class="theme-menu" id="themeMenu">
+                        <div class="theme-option" onclick="changeTheme('default')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                            <span>Default</span>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('dark-mode')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #1a1a2e, #16213e);"></div>
+                            <span>Dark</span>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('ocean-theme')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #0575e6, #021b79);"></div>
+                            <span>Ocean</span>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('forest-theme')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #11998e, #38ef7d);"></div>
+                            <span>Forest</span>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('sunset-theme')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #ff6b6b, #feca57);"></div>
+                            <span>Sunset</span>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('purple-theme')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #a770ef, #cf8bf3);"></div>
+                            <span>Purple</span>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('midnight-theme')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #232526, #414345);"></div>
+                            <span>Midnight</span>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('rosegold-theme')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #eb3349, #f45c43);"></div>
+                            <span>Rose Gold</span>
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('mint-theme')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #56ab2f, #a8e063);"></div>
+                            <span>Mint</span>
+                        </div>
+                    </div>
+                </div>
                 <button class="icon-btn" onclick="requestNotificationPermission()" title="Enable Notifications">🔔</button>
                 <button class="icon-btn" onclick="taskScheduler.exportData()" title="Export Data">💾</button>
                 <button class="icon-btn" onclick="taskScheduler.importData()" title="Import Data">📥</button>
@@ -1165,6 +1376,7 @@
             <button class="tab" onclick="openTab(event, 'assignments')">📝 Assignments</button>
             <button class="tab" onclick="openTab(event, 'grades')">📊 Grades</button>
             <button class="tab" onclick="openTab(event, 'calendar')">📅 Calendar</button>
+            <button class="tab" onclick="openTab(event, 'analytics')">📊 Analytics</button>
             <button class="tab" onclick="openTab(event, 'progress')">📈 Progress</button>
             <button class="tab" onclick="openTab(event, 'sync')">🔄 Sync</button>
             <button class="tab" onclick="openTab(event, 'archive')">📦 Archive</button>
@@ -1220,18 +1432,20 @@
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="meetingDays">Meeting Days</label>
+                                <label for="meetingDays">Meeting Days (hold Ctrl/Cmd to select multiple)</label>
                                 <select id="meetingDays" multiple>
-                                    <option value="Monday">Monday</option>
-                                    <option value="Tuesday">Tuesday</option>
-                                    <option value="Wednesday">Wednesday</option>
-                                    <option value="Thursday">Thursday</option>
-                                    <option value="Friday">Friday</option>
+                                    <option value="Mon">Monday</option>
+                                    <option value="Tue">Tuesday</option>
+                                    <option value="Wed">Wednesday</option>
+                                    <option value="Thu">Thursday</option>
+                                    <option value="Fri">Friday</option>
+                                    <option value="Sat">Saturday</option>
+                                    <option value="Sun">Sunday</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="meetingTime">Meeting Time</label>
-                                <input type="time" id="meetingTime">
+                                <label for="meetingTime">Meeting Time (e.g., "10:00 AM - 11:30 AM")</label>
+                                <input type="text" id="meetingTime" placeholder="10:00 AM - 11:30 AM">
                             </div>
                         </div>
                         
@@ -1403,6 +1617,21 @@
                     </div>
                     
                     <div id="gradeCalculatorContent"></div>
+                    
+                    <!-- What-If Grade Calculator -->
+                    <div class="form-section" style="margin-top: 30px; border-top: 2px solid var(--border-color); padding-top: 30px;">
+                        <h2>🎯 What-If Grade Calculator</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">Test scenarios: "What do I need on the final to get an A?"</p>
+                        
+                        <div class="form-group">
+                            <label>Select Course</label>
+                            <select id="whatIfCourseSelect" onchange="taskScheduler.renderWhatIfCalculator()">
+                                <option value="">Choose a course...</option>
+                            </select>
+                        </div>
+                        
+                        <div id="whatIfCalculatorContent"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1425,6 +1654,13 @@
                 <div class="form-section" style="margin-top: 30px;">
                     <h2>📋 Today's Assignments</h2>
                     <div id="todayAssignmentsList"></div>
+                </div>
+                
+                <!-- Class Schedule View -->
+                <div class="form-section" style="margin-top: 30px; border-top: 2px solid var(--border-color); padding-top: 30px;">
+                    <h2>🗓️ Weekly Class Schedule</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">View all your class meeting times</p>
+                    <div id="weeklyScheduleView"></div>
                 </div>
             </div>
         </div>
@@ -1475,6 +1711,86 @@
                     <h2>📦 Semester Archive</h2>
                     <button class="add-btn" onclick="taskScheduler.archiveCurrentSemester()" style="margin-bottom: 20px;">Archive Current Semester</button>
                     <div id="archiveList"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW: Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="main-content">
+                <!-- Time Tracking Statistics -->
+                <div class="analytics-section">
+                    <h2>⏱️ Time Tracking Statistics</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">See how you're spending your study time</p>
+                    
+                    <!-- Weekly Summary -->
+                    <div class="stats" style="margin-bottom: 30px;">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalTimeWeek">0h</div>
+                            <div class="stat-label">This Week</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalTimeMonth">0h</div>
+                            <div class="stat-label">This Month</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalTimeSemester">0h</div>
+                            <div class="stat-label">This Semester</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="averageTimeDay">0h</div>
+                            <div class="stat-label">Avg per Day</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Time by Course -->
+                    <div class="form-section" style="margin-bottom: 30px;">
+                        <h3>📚 Time Breakdown by Course</h3>
+                        <div id="timeBreakdownByCourse"></div>
+                    </div>
+                    
+                    <!-- Estimated vs Actual Time -->
+                    <div class="form-section">
+                        <h3>🎯 Estimated vs Actual Time</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 15px;">How accurate are your time estimates?</p>
+                        <div id="estimatedVsActual"></div>
+                    </div>
+                </div>
+                
+                <!-- Smart Reminders Section -->
+                <div class="form-section" style="margin-top: 30px; border-top: 2px solid var(--border-color); padding-top: 30px;">
+                    <h2>🔔 Smart Reminders</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Automatic notifications for upcoming assignments</p>
+                    
+                    <div class="reminder-settings">
+                        <h3>Reminder Settings</h3>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="reminders7days" checked> 7 days before due date
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="reminders3days" checked> 3 days before due date
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="reminders1day" checked> 1 day before due date
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="remindersHighPriority" checked> Extra reminders for high-priority items
+                            </label>
+                        </div>
+                        <button class="add-btn" onclick="taskScheduler.saveReminderSettings()" style="margin-top: 15px;">Save Reminder Settings</button>
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <h3>📋 Upcoming Reminders</h3>
+                        <div id="upcomingRemindersList"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1561,11 +1877,15 @@
                 this.updateStats();
                 this.updateCourseSelect();
                 this.updateGradeCalcCourseSelect();
+                this.updateWhatIfCourseSelect();
+                this.updateWhatIfCourseSelect();
                 this.setMinDateTime();
                 this.renderCalendar();
                 this.renderProgress();
                 this.renderArchive();
-                this.checkDarkMode();
+                this.renderWeeklySchedule();
+                this.renderTimeStatistics();
+                this.renderUpcomingReminders();
                 this.setupTagInput();
             }
 
@@ -1992,8 +2312,10 @@
                 this.renderCourses();
                 this.updateCourseSelect();
                 this.updateGradeCalcCourseSelect();
+                this.updateWhatIfCourseSelect();
                 this.clearCourseForm();
                 this.renderProgress();
+                this.renderWeeklySchedule();
                 this.showNotification('Course added!', 'success');
             }
 
@@ -2230,8 +2552,10 @@
                     this.renderCourses();
                     this.updateCourseSelect();
                     this.updateGradeCalcCourseSelect();
+                this.updateWhatIfCourseSelect();
                     this.clearCourseForm();
                     this.renderProgress();
+                    this.renderWeeklySchedule();
                     
                     // Reset button
                     const addButton = document.querySelector('#courses .add-btn');
@@ -2254,6 +2578,7 @@
                 this.renderCourses();
                 this.renderTasks();
                 this.updateStats();
+                this.renderWeeklySchedule();
                 this.showNotification('Course deleted', 'success');
             }
 
@@ -2512,12 +2837,16 @@
                 if (!task) return;
                 
                 task.completed = !task.completed;
+                if (task.completed) {
+                    task.completedAt = new Date();
+                }
                 this.saveTasks();
                 this.renderTasks();
                 this.renderCourses();
                 this.renderCalendar();
                 this.renderTodayAssignments();
                 this.updateStats();
+                this.renderTimeStatistics();
                 this.showNotification(task.completed ? 'Completed!' : 'Marked pending', 'success');
             }
             
@@ -2917,7 +3246,21 @@
                     const grade = this.calculateCourseGrade(course.id);
                     const gradeNum = this.gradeToNumber(grade);
                     if (gradeNum && course.credits) {
-                        totalPoints += (gradeNum / 25) * course.credits;
+                        // Convert percentage to 4.0 GPA scale
+                        let gpaPoints;
+                        if (gradeNum >= 93) gpaPoints = 4.0;
+                        else if (gradeNum >= 90) gpaPoints = 3.7;
+                        else if (gradeNum >= 87) gpaPoints = 3.3;
+                        else if (gradeNum >= 83) gpaPoints = 3.0;
+                        else if (gradeNum >= 80) gpaPoints = 2.7;
+                        else if (gradeNum >= 77) gpaPoints = 2.3;
+                        else if (gradeNum >= 73) gpaPoints = 2.0;
+                        else if (gradeNum >= 70) gpaPoints = 1.7;
+                        else if (gradeNum >= 67) gpaPoints = 1.3;
+                        else if (gradeNum >= 65) gpaPoints = 1.0;
+                        else gpaPoints = 0.0;
+                        
+                        totalPoints += gpaPoints * course.credits;
                         totalCredits += course.credits;
                     }
                 });
@@ -3129,18 +3472,393 @@
                 setTimeout(() => notification.remove(), 3000);
             }
             
-            checkDarkMode() {
-                const darkMode = localStorage.getItem('darkMode') === 'true';
-                if (darkMode) {
-                    document.body.classList.add('dark-mode');
+            // ===== NEW FEATURES =====
+            
+            // What-If Grade Calculator
+            renderWhatIfCalculator() {
+                const courseId = parseInt(document.getElementById('whatIfCourseSelect').value);
+                const content = document.getElementById('whatIfCalculatorContent');
+                
+                if (!courseId) {
+                    content.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 40px;">Select a course to use What-If calculator</p>';
+                    return;
+                }
+                
+                const course = this.courses.find(c => c.id === courseId);
+                if (!course || !course.gradeCategories || course.gradeCategories.length === 0) {
+                    content.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 40px;">No grade categories set for this course</p>';
+                    return;
+                }
+                
+                const currentGrade = this.calculateCourseGrade(courseId);
+                
+                let html = `
+                    <div class="grade-breakdown">
+                        <h3>Current Grade: ${currentGrade || 'Not enough data'}</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">Enter hypothetical grades to see what you'd need to achieve your target</p>
+                        
+                        <div class="form-group">
+                            <label>Target Grade</label>
+                            <select id="whatIfTargetGrade">
+                                <option value="97">A+ (97%)</option>
+                                <option value="93" selected>A (93%)</option>
+                                <option value="90">A- (90%)</option>
+                                <option value="87">B+ (87%)</option>
+                                <option value="83">B (83%)</option>
+                                <option value="80">B- (80%)</option>
+                            </select>
+                        </div>
+                `;
+                
+                // Show each category with completed + upcoming assignments
+                course.gradeCategories.forEach(category => {
+                    const categoryTasks = this.tasks.filter(t => t.courseId === courseId && t.category === category.name);
+                    const completed = categoryTasks.filter(t => t.completed && t.grade);
+                    const upcoming = categoryTasks.filter(t => !t.completed);
+                    
+                    html += `
+                        <div class="category-section" style="margin: 20px 0; padding: 20px; background: var(--hover-bg); border-radius: 10px;">
+                            <h4>${category.name} (${category.weight}%)</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.9em;">
+                                Completed: ${completed.length} | Upcoming: ${upcoming.length}
+                            </p>
+                    `;
+                    
+                    if (completed.length > 0) {
+                        const avg = completed.reduce((sum, t) => sum + this.gradeToNumber(t.grade), 0) / completed.length;
+                        html += `<p>Current average: <strong>${avg.toFixed(1)}%</strong></p>`;
+                    }
+                    
+                    // Input for hypothetical grade on upcoming assignments
+                    if (upcoming.length > 0) {
+                        html += `
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>If you get this grade on remaining ${upcoming.length} assignment(s):</label>
+                                <input type="number" class="what-if-input" data-category="${category.name}" min="0" max="100" placeholder="Enter grade (0-100)">
+                            </div>
+                        `;
+                    }
+                    
+                    html += `</div>`;
+                });
+                
+                html += `
+                    <button class="add-btn" onclick="taskScheduler.calculateWhatIf(${courseId})">Calculate What I Need</button>
+                    <div id="whatIfResult" style="margin-top: 20px;"></div>
+                </div>
+                `;
+                
+                content.innerHTML = html;
+            }
+            
+            calculateWhatIf(courseId) {
+                const course = this.courses.find(c => c.id === courseId);
+                const targetGrade = parseFloat(document.getElementById('whatIfTargetGrade').value);
+                const resultDiv = document.getElementById('whatIfResult');
+                
+                // Get hypothetical grades entered
+                const inputs = document.querySelectorAll('.what-if-input');
+                const hypotheticals = {};
+                inputs.forEach(input => {
+                    if (input.value) {
+                        hypotheticals[input.dataset.category] = parseFloat(input.value);
+                    }
+                });
+                
+                // Calculate weighted grade with hypotheticals
+                let totalWeightedGrade = 0;
+                let totalWeight = 0;
+                let messages = [];
+                
+                course.gradeCategories.forEach(category => {
+                    const categoryTasks = this.tasks.filter(t => t.courseId === courseId && t.category === category.name);
+                    const completed = categoryTasks.filter(t => t.completed && t.grade);
+                    const upcoming = categoryTasks.filter(t => !t.completed);
+                    
+                    let categoryAvg = 0;
+                    
+                    if (completed.length > 0 && upcoming.length > 0 && hypotheticals[category.name]) {
+                        // Mix completed grades with hypothetical
+                        const completedSum = completed.reduce((sum, t) => sum + this.gradeToNumber(t.grade), 0);
+                        const hypotheticalSum = hypotheticals[category.name] * upcoming.length;
+                        categoryAvg = (completedSum + hypotheticalSum) / (completed.length + upcoming.length);
+                        messages.push(`${category.name}: If you get ${hypotheticals[category.name]}% on ${upcoming.length} remaining, avg would be ${categoryAvg.toFixed(1)}%`);
+                    } else if (completed.length > 0) {
+                        categoryAvg = completed.reduce((sum, t) => sum + this.gradeToNumber(t.grade), 0) / completed.length;
+                    } else if (hypotheticals[category.name]) {
+                        categoryAvg = hypotheticals[category.name];
+                        messages.push(`${category.name}: Assuming ${categoryAvg}%`);
+                    }
+                    
+                    if (categoryAvg > 0) {
+                        totalWeightedGrade += (categoryAvg * category.weight) / 100;
+                        totalWeight += category.weight;
+                    }
+                });
+                
+                const projectedGrade = (totalWeightedGrade / totalWeight) * 100;
+                
+                let resultHTML = `
+                    <div style="padding: 20px; background: var(--card-bg); border-radius: 10px; border: 2px solid var(--accent);">
+                        <h3>📊 Projected Grade: ${projectedGrade.toFixed(1)}% (${this.numberToGrade(projectedGrade)})</h3>
+                        <p style="margin: 10px 0;"><strong>Target:</strong> ${targetGrade}% (${this.numberToGrade(targetGrade)})</p>
+                `;
+                
+                if (projectedGrade >= targetGrade) {
+                    resultHTML += `<p style="color: var(--success); font-weight: bold;">✅ You're on track to meet your target!</p>`;
+                } else {
+                    const needed = targetGrade - projectedGrade;
+                    resultHTML += `<p style="color: var(--warning); font-weight: bold;">⚠️ You need ${needed.toFixed(1)} more percentage points to reach your target.</p>`;
+                }
+                
+                if (messages.length > 0) {
+                    resultHTML += `<div style="margin-top: 15px; padding: 15px; background: var(--hover-bg); border-radius: 8px;">`;
+                    messages.forEach(msg => {
+                        resultHTML += `<p style="font-size: 0.9em; margin: 5px 0;">• ${msg}</p>`;
+                    });
+                    resultHTML += `</div>`;
+                }
+                
+                resultHTML += `</div>`;
+                resultDiv.innerHTML = resultHTML;
+            }
+            
+            // Time Tracking Statistics
+            renderTimeStatistics() {
+                // Calculate time spent this week, month, semester
+                const now = new Date();
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                
+                const completedTasks = this.tasks.filter(t => t.completed);
+                
+                const weekTasks = completedTasks.filter(t => new Date(t.completedAt || t.dueDate) >= weekAgo);
+                const monthTasks = completedTasks.filter(t => new Date(t.completedAt || t.dueDate) >= monthAgo);
+                
+                const weekTime = weekTasks.reduce((sum, t) => sum + (t.estimatedTime || 0), 0);
+                const monthTime = monthTasks.reduce((sum, t) => sum + (t.estimatedTime || 0), 0);
+                const semesterTime = completedTasks.reduce((sum, t) => sum + (t.estimatedTime || 0), 0);
+                
+                // Only update if elements exist
+                const weekEl = document.getElementById('totalTimeWeek');
+                const monthEl = document.getElementById('totalTimeMonth');
+                const semesterEl = document.getElementById('totalTimeSemester');
+                const avgEl = document.getElementById('averageTimeDay');
+                
+                if (weekEl) weekEl.textContent = weekTime.toFixed(1) + 'h';
+                if (monthEl) monthEl.textContent = monthTime.toFixed(1) + 'h';
+                if (semesterEl) semesterEl.textContent = semesterTime.toFixed(1) + 'h';
+                if (avgEl) avgEl.textContent = (weekTime / 7).toFixed(1) + 'h';
+                
+                // Time breakdown by course
+                this.renderTimeBreakdownByCourse();
+            }
+            
+            renderTimeBreakdownByCourse() {
+                const container = document.getElementById('timeBreakdownByCourse');
+                if (!container) return;
+                
+                const courseTimeMap = {};
+                this.tasks.filter(t => t.completed).forEach(task => {
+                    const time = task.estimatedTime || 0;
+                    if (!courseTimeMap[task.courseId]) {
+                        courseTimeMap[task.courseId] = 0;
+                    }
+                    courseTimeMap[task.courseId] += time;
+                });
+                
+                const totalTime = Object.values(courseTimeMap).reduce((sum, time) => sum + time, 0);
+                
+                let html = '';
+                this.courses.forEach(course => {
+                    const courseTime = courseTimeMap[course.id] || 0;
+                    const percentage = totalTime > 0 ? (courseTime / totalTime * 100).toFixed(1) : 0;
+                    
+                    html += `
+                        <div style="margin: 15px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <strong>${course.name}</strong>
+                                <span>${courseTime.toFixed(1)}h (${percentage}%)</span>
+                            </div>
+                            <div style="background: var(--border-color); height: 20px; border-radius: 10px; overflow: hidden;">
+                                <div style="background: ${this.getCourseColor(course.id)}; height: 100%; width: ${percentage}%; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                if (html === '') {
+                    html = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">No time data yet. Complete some assignments to see statistics!</p>';
+                }
+                
+                container.innerHTML = html;
+            }
+            
+            // Weekly Schedule View
+            renderWeeklySchedule() {
+                const container = document.getElementById('weeklyScheduleView');
+                if (!container) return;
+                
+                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                const dayMap = { 'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday', 'Thu': 'Thursday', 'Fri': 'Friday', 'Sat': 'Saturday', 'Sun': 'Sunday' };
+                
+                let scheduleByDay = {};
+                days.forEach(day => scheduleByDay[day] = []);
+                
+                // Collect all courses with meeting times
+                this.courses.forEach(course => {
+                    if (course.meetingDays && course.meetingDays.length > 0 && course.meetingTime) {
+                        course.meetingDays.forEach(dayShort => {
+                            const day = dayMap[dayShort];
+                            if (day) {
+                                scheduleByDay[day].push({
+                                    course: course,
+                                    time: course.meetingTime
+                                });
+                            }
+                        });
+                    }
+                });
+                
+                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">';
+                
+                days.forEach(day => {
+                    html += `
+                        <div style="background: var(--card-bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color);">
+                            <h4 style="margin-bottom: 15px; color: var(--accent);">${day}</h4>
+                    `;
+                    
+                    if (scheduleByDay[day].length === 0) {
+                        html += '<p style="color: var(--text-secondary); font-size: 0.9em;">No classes</p>';
+                    } else {
+                        scheduleByDay[day].sort((a, b) => a.time.localeCompare(b.time));
+                        scheduleByDay[day].forEach(item => {
+                            html += `
+                                <div style="margin: 10px 0; padding: 10px; background: var(--hover-bg); border-radius: 8px;">
+                                    <div style="font-weight: 600;">${item.course.code}</div>
+                                    <div style="font-size: 0.9em; color: var(--text-secondary);">${item.time}</div>
+                                    ${item.course.instructor ? `<div style="font-size: 0.85em; color: var(--text-secondary);">${item.course.instructor}</div>` : ''}
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+            
+            // Smart Reminders
+            checkUpcomingReminders() {
+                const now = new Date();
+                const settings = this.loadReminderSettings();
+                const upcomingTasks = this.tasks.filter(t => !t.completed && new Date(t.dueDate) > now);
+                
+                let reminders = [];
+                
+                upcomingTasks.forEach(task => {
+                    const dueDate = new Date(task.dueDate);
+                    const daysUntilDue = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    if (settings.reminders7days && daysUntilDue === 7) {
+                        reminders.push({ task, days: 7 });
+                    }
+                    if (settings.reminders3days && daysUntilDue === 3) {
+                        reminders.push({ task, days: 3 });
+                    }
+                    if (settings.reminders1day && daysUntilDue === 1) {
+                        reminders.push({ task, days: 1 });
+                    }
+                    if (settings.remindersHighPriority && task.priority === 'high' && daysUntilDue <= 5) {
+                        reminders.push({ task, days: daysUntilDue, isHighPriority: true });
+                    }
+                });
+                
+                return reminders;
+            }
+            
+            renderUpcomingReminders() {
+                const container = document.getElementById('upcomingRemindersList');
+                if (!container) return;
+                
+                const reminders = this.checkUpcomingReminders();
+                
+                if (reminders.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">No upcoming reminders</p>';
+                    return;
+                }
+                
+                let html = '';
+                reminders.forEach(reminder => {
+                    const task = reminder.task;
+                    html += `
+                        <div style="background: var(--card-bg); padding: 15px; margin: 10px 0; border-radius: 10px; border-left: 4px solid ${reminder.isHighPriority ? 'var(--danger)' : 'var(--info)'};">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4 style="margin: 0 0 5px 0;">${task.title}</h4>
+                                    <p style="color: var(--text-secondary); font-size: 0.9em; margin: 0;">${task.courseName}</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: bold; color: ${reminder.days <= 1 ? 'var(--danger)' : 'var(--warning)'};">
+                                        ${reminder.days} day${reminder.days !== 1 ? 's' : ''}
+                                    </div>
+                                    ${reminder.isHighPriority ? '<span style="font-size: 0.8em; color: var(--danger);">HIGH PRIORITY</span>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            }
+            
+            loadReminderSettings() {
+                try {
+                    const settings = JSON.parse(localStorage.getItem('reminderSettings'));
+                    return settings || {
+                        reminders7days: true,
+                        reminders3days: true,
+                        reminders1day: true,
+                        remindersHighPriority: true
+                    };
+                } catch {
+                    return {
+                        reminders7days: true,
+                        reminders3days: true,
+                        reminders1day: true,
+                        remindersHighPriority: true
+                    };
                 }
             }
             
-            toggleDarkMode() {
-                document.body.classList.toggle('dark-mode');
-                localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            saveReminderSettings() {
+                const settings = {
+                    reminders7days: document.getElementById('reminders7days').checked,
+                    reminders3days: document.getElementById('reminders3days').checked,
+                    reminders1day: document.getElementById('reminders1day').checked,
+                    remindersHighPriority: document.getElementById('remindersHighPriority').checked
+                };
+                localStorage.setItem('reminderSettings', JSON.stringify(settings));
+                this.renderUpcomingReminders();
+                this.showNotification('Reminder settings saved!', 'success');
             }
-
+            
+            // Update course select for What-If calculator
+            updateWhatIfCourseSelect() {
+                const select = document.getElementById('whatIfCourseSelect');
+                if (!select) return;
+                
+                select.innerHTML = '<option value="">Choose a course...</option>';
+                this.courses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course.id;
+                    option.textContent = `${course.code} - ${course.name}`;
+                    select.appendChild(option);
+                });
+            }
+            
             // Data persistence
             loadCourses() {
                 try {
@@ -3196,9 +3914,60 @@
             evt.currentTarget.classList.add('active');
         }
 
-        function toggleDarkMode() {
-            taskScheduler.toggleDarkMode();
+        function toggleThemeMenu() {
+            const menu = document.getElementById('themeMenu');
+            menu.classList.toggle('show');
         }
+        
+        function changeTheme(theme) {
+            // Remove all theme classes
+            document.body.className = '';
+            
+            // Add new theme class (except for default)
+            if (theme !== 'default') {
+                document.body.classList.add(theme);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('selectedTheme', theme);
+            
+            // Close menu
+            document.getElementById('themeMenu').classList.remove('show');
+            
+            // Show notification
+            const themeNames = {
+                'default': 'Default',
+                'dark-mode': 'Dark',
+                'ocean-theme': 'Ocean',
+                'forest-theme': 'Forest',
+                'sunset-theme': 'Sunset',
+                'purple-theme': 'Purple Dream',
+                'midnight-theme': 'Midnight',
+                'rosegold-theme': 'Rose Gold',
+                'mint-theme': 'Mint'
+            };
+            
+            if (taskScheduler) {
+                taskScheduler.showNotification(`Theme changed to ${themeNames[theme]}!`, 'success');
+            }
+        }
+        
+        // Load saved theme on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+            if (savedTheme !== 'default') {
+                document.body.classList.add(savedTheme);
+            }
+        });
+        
+        // Close theme menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const themeMenu = document.getElementById('themeMenu');
+            const themeSelector = e.target.closest('.theme-selector');
+            if (!themeSelector && themeMenu) {
+                themeMenu.classList.remove('show');
+            }
+        });
 
         function requestNotificationPermission() {
             // Notification permission code
