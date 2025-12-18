@@ -3973,16 +3973,77 @@
             // Notification permission code
         }
 
+        function formatICSDate(date) {
+            const d = new Date(date);
+            const year = d.getUTCFullYear();
+            const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(d.getUTCDate()).padStart(2, '0');
+            const hours = String(d.getUTCHours()).padStart(2, '0');
+            const minutes = String(d.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(d.getUTCSeconds()).padStart(2, '0');
+            return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+        }
+        
+        // Helper: Format date for ICS (YYYYMMDD for all-day events)
+        function formatICSDateOnly(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}${month}${day}`;
+        }
+        
+        // Helper: Escape text for ICS format
+        function escapeICS(text) {
+            if (!text) return '';
+            return text.replace(/\\/g, '\\\\')
+                      .replace(/;/g, '\\;')
+                      .replace(/,/g, '\\,')
+                      .replace(/\n/g, '\\n');
+        }
+        
+        // Helper: Get day of week number
+        function getDayNumber(dayCode) {
+            const days = { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 };
+            return days[dayCode] || 0;
+        }
+        
+        // Helper: Convert meeting time to start/end times
+        function parseMeetingTime(timeString) {
+            // ... 30 lines of time parsing code ...
+        }
+        
+        // Generate complete ICS file content
+        function generateICSContent() {
+            // ... 120 lines creating ICS format ...
+            // - Creates VTODO for each assignment
+            // - Creates VEVENT for each class meeting
+            // - Returns complete ICS file as string
+        }
+        
+        // Export to Google Calendar
         function exportToGoogleCalendar() {
-            // Calendar export code
+            const icsContent = generateICSContent();
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'task-scheduler.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            alert('✅ Calendar file downloaded!...');
         }
-
+        
+        // Export to Outlook
         function exportToOutlook() {
-            // Outlook export code
+            // Same as above but different instructions
         }
-
+        
+        // Export to ICS (universal format)
         function exportToICS() {
-            // ICS export code
+            // Same as above plus shows count of items
         }
 
         // Initialize
